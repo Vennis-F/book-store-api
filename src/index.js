@@ -9,7 +9,6 @@ app.use(express.json())
 
 //Config express
 app.use("/user", userRouter)
-require("./models/role")
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`)
