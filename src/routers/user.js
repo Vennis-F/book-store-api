@@ -1,12 +1,18 @@
 const auth = require("../middlewares/auth")
+const authorize = require("../middlewares/authorize")
 const User = require("../models/user")
 const bcrypt = require("bcryptjs")
 const { resetPassword } = require("../emails/account")
+const Role = require("../models/role")
 const router = require("express").Router()
 
 //POST /user/register
 router.post("/register", async (req, res) => {
-  const user = new User(req.body)
+  const role = await Role.findOne({ name: "customer" })
+  const user = new User({
+    ...req.body,
+    role: role._id,
+  })
 
   try {
     const token = await user.generateAuthToken()
@@ -57,9 +63,14 @@ router.post("/logoutAll", auth, async (req, res) => {
 })
 
 //GET /user/profile
-router.get("/profile", auth, (req, res) => {
-  res.send(req.user)
-})
+router.get(
+  "/profile",
+  auth,
+  authorize("customer", "marketing", "sale", "saleManager", "admin"),
+  async (req, res) => {
+    res.send({ user: req.user, role: req.role })
+  }
+)
 
 //GET /user (get all users)
 router.get("/", auth, async (req, res) => {

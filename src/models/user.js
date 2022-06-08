@@ -3,6 +3,8 @@ const uniqueValidator = require("mongoose-unique-validator")
 const validator = require("validator")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
+const Role = require("../models/role")
+require("../models/role")
 
 //Schema
 const userSchema = mongoose.Schema({
@@ -75,7 +77,6 @@ const userSchema = mongoose.Schema({
   role: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
-    default: "123456789012345678901234",
     ref: "Role",
   }, // => roleID
 })
@@ -88,16 +89,19 @@ userSchema.plugin(uniqueValidator)
 
 //   delete userObject.password
 //   delete userObject.tokens
+//   delete userObject.role
 
 //   return userObject
 // }
 userSchema.methods.generateAuthToken = async function () {
   const user = this
-  const token = await jwt.sign({ _id: user._id }, "SEC_JWT")
+  const token = await jwt.sign(
+    { _id: user._id, role: (await Role.findById(user.role)).code },
+    "SEC_JWT"
+  )
 
   //Save token to user.tokens
   user.tokens.push({ token })
-  console.log(user)
   await user.save()
 
   return token

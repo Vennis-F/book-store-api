@@ -58,9 +58,4 @@ let roles = [
   },
 ]
 roles = roles.map((role) => new Role(role))
-roles.forEach((role) => role.save())
-
-// role.validate((err) => {
-//   if (err) return console.log(err.message)
-//   console.log("GOOD")
-// })
+// roles.forEach((role) => role.save())

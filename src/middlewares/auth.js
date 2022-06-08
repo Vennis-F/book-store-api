@@ -12,6 +12,7 @@ const auth = async (req, res, next) => {
 
     req.user = user
     req.token = token
+    req.role = decode.role
     next()
   } catch (e) {
     //Case: Not token, not valid token, user not found(jwt not valid)
