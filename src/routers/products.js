@@ -1,9 +1,10 @@
 const auth = require("../middlewares/auth")
 const authorize = require("../middlewares/authorize")
 const Product = require("../models/product")
-
 const router = require("express").Router()
+const { isValidUpdate, updatesFilter } = require("../utils/valid")
 
+//POST /products
 router.post("/", auth, authorize("marketing"), async (req, res) => {
   const product = new Product({ ...req.body })
   try {
@@ -18,7 +19,7 @@ router.post("/", auth, authorize("marketing"), async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const products = await Product.find({})
-    res.send(cates)
+    res.send(products)
   } catch (e) {
     res.statu(500).send()
   }
@@ -59,35 +60,51 @@ router.get("/category/:id", async (req, res) => {
   }
 })
 
-//PATCH /categories/:id
-router.patch("/:id", auth, authorize("admin"), async (req, res) => {
-  const updates = Object.keys(req.body)
+//PATCH /categories/:id (ALL field)
+router.patch("/:id", auth, authorize("marketing"), async (req, res) => {
+  let updates = updatesFilter(req.body)
   const allowUpdateds = [
     "title",
     "listPrice",
     "salePrice",
     "quantity",
     "description",
-    "features",
+    "feature",
     "status",
+    "author",
+    "publisher",
+    "publicDate",
+    "language",
+    "pages",
+    "category",
   ]
   if (!isValidUpdate(updates, allowUpdateds))
     return res.status(400).send({ error: "Invalid updates" })
 
   try {
-    //Find and Check cate exist:
-    const cate = await Category.findById(req.params.id)
-    if (!cate) return res.sendStatus(404)
+    //Find and Check product exist:
+    const product = await Product.findById(req.params.id)
+    if (!product) return res.sendStatus(404)
 
-    //Update category
-    updates.forEach((update) => (cate[update] = req.body[update]))
-    await cate.save({ validateModifiedOnly: true })
+    //Update product
+    updates.forEach((update) => (product[update] = req.body[update]))
 
-    res.send(cate)
+    //Update product brief inforamtion
+    if (Object.keys(req.body).includes("briefInformation")) {
+      const briefs = Object.keys(req.body["briefInformation"])
+      briefs.forEach(
+        (brief) =>
+          (product["briefInformation"][brief] =
+            req.body["briefInformation"][brief])
+      )
+    }
+
+    await product.save({ validateModifiedOnly: true })
+    res.send(product)
   } catch (e) {
     if (e.name === "CastError" && e.kind === "ObjectId")
       return res.status(400).send({ error: "Invalid ID" })
-    res.status(500).send(e.message)
+    res.status(400).send(e)
   }
 })
 

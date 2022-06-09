@@ -78,11 +78,11 @@ const cart = new Cart({
   ],
 })
 
-console.log(cart)
+// console.log(cart)
 
-cart.validate((err) => {
-  if (err) return console.log(err.message)
-  console.log("GOOD")
-})
+// cart.validate((err) => {
+//   if (err) return console.log(err.message)
+//   console.log("GOOD")
+// })
 
 module.exports = Cart

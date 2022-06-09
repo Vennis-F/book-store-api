@@ -5,4 +5,13 @@ const isValidUpdate = (updates, allowUpdateds) => {
   return true
 }
 
-module.exports = { isValidUpdate }
+const updatesFilter = (allowedObj) => {
+  let updates = Object.keys(allowedObj)
+  if (updates.includes("briefInformation")) {
+    updates = [...updates, ...Object.keys(allowedObj.briefInformation)]
+  }
+  updates = updates.filter((u) => u !== "briefInformation")
+  return updates
+}
+
+module.exports = { isValidUpdate, updatesFilter }

@@ -60,7 +60,7 @@ router.patch("/:id", auth, authorize("admin"), async (req, res) => {
   } catch (e) {
     if (e.name === "CastError" && e.kind === "ObjectId")
       return res.status(400).send({ error: "Invalid ID" })
-    res.status(500).send(e.message)
+    res.status(400).send(e.message)
   }
 })
 
