@@ -17,8 +17,8 @@ router.post("/register", async (req, res) => {
   try {
     const token = await user.generateAuthToken()
     res.status(201).send({ user, token })
-  } catch (error) {
-    res.status(400).send(error)
+  } catch (e) {
+    res.status(400).send(e)
   }
 })
 

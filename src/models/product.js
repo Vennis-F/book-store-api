@@ -2,12 +2,17 @@ const mongoose = require("mongoose")
 const uniqueValidator = require("mongoose-unique-validator")
 const validator = require("validator")
 
+//Schema
 const productSchema = mongoose.Schema({
+  //Unique
   title: {
     type: String,
     required: true,
+    unique: true,
     trim: true,
   },
+
+  //Require-normal
   listPrice: {
     type: Number,
     required: true,
@@ -16,6 +21,8 @@ const productSchema = mongoose.Schema({
   },
   salePrice: {
     type: Number,
+    required: true,
+
     min: 0,
   },
   quantity: {
@@ -24,7 +31,23 @@ const productSchema = mongoose.Schema({
     default: 0,
     min: 0,
   },
+  description: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  fearture: {
+    type: Boolean,
+    require: true,
+    default: false,
+  },
+  status: {
+    type: Boolean,
+    required: true,
+    default: true,
+  },
   briefInformation: {
+    //require
     author: {
       type: String,
       required: true,
@@ -37,8 +60,11 @@ const productSchema = mongoose.Schema({
     },
     publicDate: {
       type: Date,
+      required: true,
       max: new Date(),
     },
+
+    //normal
     language: {
       type: String,
       default: "Tiếng Việt",
@@ -54,34 +80,23 @@ const productSchema = mongoose.Schema({
       },
     },
   },
-  description: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  fearture: {
-    type: Boolean,
-    default: false,
-  },
-  status: {
-    type: Boolean,
-    default: true,
-  },
-  thumbnail: {
-    type: Buffer,
-    required: true,
-  },
-  images: [
-    {
-      image: {
-        type: Buffer,
-        required: true,
-      },
-      imageAltDoc: String,
-    },
-  ],
+  // thumbnail: {
+  //   type: Buffer,
+  //   required: true,
+  // },
 
-  // Ref
+  //normal
+  // images: [
+  //   {
+  //     image: {
+  //       type: Buffer,
+  //       required: true,
+  //     },
+  //     imageAltDoc: String,
+  //   },
+  // ],
+
+  // //ref
   category: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
@@ -90,6 +105,7 @@ const productSchema = mongoose.Schema({
 })
 productSchema.plugin(uniqueValidator)
 
+//middleware
 productSchema.pre("validate", function (next) {
   if (this.salePrice >= this.listPrice) {
     this.invalidate(
@@ -104,12 +120,24 @@ productSchema.pre("validate", function (next) {
 
 //Model
 const Product = mongoose.model("Product", productSchema)
-
 module.exports = Product
 
-// briefInformation: {
-//   author: "Honag Anh",
-//   publisher: "NXB Giao Duc tre em",
-//   pages: 100,
-//   publicDate: "2022/06/08",
-// },
+//Test
+const product = new Product({
+  title: "Naruto tập 4",
+  listPrice: 10000,
+  salePrice: 8000,
+  description: "Đây là truyện tranh về Naruto shippuden",
+  briefInformation: {
+    author: "Honag Anh",
+    publisher: "NXB Giao Duc tre em",
+    pages: 100,
+    publicDate: "2022/06/08",
+  },
+  category: "123456789012345678901234",
+})
+// console.log(product)
+// product.validate((err) => {
+//   if (err) return console.log(err.message)
+//   console.log("GOOD")
+// })
