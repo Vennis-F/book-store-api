@@ -4,6 +4,7 @@ const User = require("../models/user")
 const bcrypt = require("bcryptjs")
 const { resetPassword } = require("../emails/account")
 const Role = require("../models/role")
+const { isValidUpdate } = require("../utils/valid")
 const router = require("express").Router()
 
 //POST /user/register
@@ -129,6 +130,61 @@ router.patch("/password", auth, async (req, res) => {
     res.send(req.user)
   } catch (e) {
     res.status(500).send(e)
+  }
+})
+
+//PATCH /user/role/:id (userId)
+router.patch("/role/:id", auth, authorize("admin"), async (req, res) => {
+  const updates = Object.keys(req.body)
+  const allowUpdateds = ["role"]
+  if (!isValidUpdate(updates, allowUpdateds))
+    return res.status(400).send({ error: "Invalid updates" })
+
+  try {
+    //Check idUser exist
+    const user = await User.findById(req.params.id)
+    if (!user) return res.status(404).send({ error: "Cannot find user" })
+
+    //Check idRole exist
+    if (!(await Role.findById(req.body.role)))
+      return res.status(404).send({ error: "Cannot find roleId" })
+
+    //Find and Update role
+    user.role = req.body.role
+
+    await user.save()
+    res.send(user)
+  } catch (e) {
+    if (e.name === "CastError" && e.kind === "ObjectId")
+      return res.status(400).send({ error: "Invalid ID" })
+    res.status(400).send(e.message)
+  }
+})
+
+//PATCH /user/user/:id (userId)
+router.patch("/status/:id", auth, authorize("customer"), async (req, res) => {
+  const updates = Object.keys(req.body)
+  const allowUpdateds = ["status"]
+  if (!isValidUpdate(updates, allowUpdateds))
+    return res.status(400).send({ error: "Invalid updates" })
+
+  try {
+    //Find and Update user status
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      {
+        status: req.body.status,
+      },
+      { runValidators: true, new: true }
+    )
+
+    //Find and Check cate exist:
+    if (!user) return res.sendStatus(404)
+    res.send(user)
+  } catch (e) {
+    if (e.name === "CastError" && e.kind === "ObjectId")
+      return res.status(400).send({ error: "Invalid ID" })
+    res.status(400).send(e.message)
   }
 })
 

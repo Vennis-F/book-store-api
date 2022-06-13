@@ -164,7 +164,7 @@ router.delete(
         return res.status(400).send({ error: "Cart item id not found" })
 
       //Saved cart
-      await cart.save()
+      // await cart.save()
       res.status(200).send(cart)
     } catch (e) {
       res.status(500).send(e.message)

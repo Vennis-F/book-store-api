@@ -48,13 +48,17 @@ router.patch("/:id", auth, authorize("admin"), async (req, res) => {
     return res.status(400).send({ error: "Invalid updates" })
 
   try {
-    //Find and Check cate exist:
-    const cate = await Category.findById(req.params.id)
-    if (!cate) return res.sendStatus(404)
+    //Find and Update cate
+    const cate = await Category.findByIdAndUpdate(
+      req.params.id,
+      {
+        name: req.body.name,
+      },
+      { runValidators: true, new: true }
+    )
 
-    //Update category
-    updates.forEach((update) => (cate[update] = req.body[update]))
-    await cate.save({ validateModifiedOnly: true })
+    //Find and Check cate exist:
+    if (!cate) return res.sendStatus(404)
 
     res.send(cate)
   } catch (e) {

@@ -13,7 +13,7 @@ const orderSchema = mongoose.Schema(
     }, // => userId
     saler: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
+      // required: true,
       ref: "User",
     }, // => salerId
 
@@ -43,7 +43,7 @@ const orderSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      required: true,
+      // required: true,
       enum: ["success", "cancelled", "submitted"],
       default: "submitted",
       trim: true,
@@ -113,11 +113,11 @@ const order = new Order({
   ],
 })
 
-console.log(order)
+// console.log(order)
 
-order.validate((err) => {
-  if (err) return console.log(err.message)
-  console.log("GOOD")
-})
+// order.validate((err) => {
+//   if (err) return console.log(err.message)
+//   console.log("GOOD")
+// })
 
 module.exports = Order
