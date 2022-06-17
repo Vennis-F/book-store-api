@@ -14,10 +14,9 @@ const categorySchema = mongoose.Schema({
 })
 
 categorySchema.plugin(uniqueValidator)
-categorySchema.plugin(mongoose_delete)
 
 //Model
-const Category = mongoose.model("Category", categorySchema)
+const Category = mongoose.model("category", categorySchema)
 module.exports = Category
 
 //Test
