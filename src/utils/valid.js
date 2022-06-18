@@ -14,4 +14,7 @@ const updatesFilter = (allowedObj) => {
   return updates
 }
 
-module.exports = { isValidUpdate, updatesFilter }
+module.exports = {
+  isValidUpdate,
+  updatesFilter,
+}

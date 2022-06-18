@@ -2,6 +2,53 @@ const mongoose = require("mongoose")
 const uniqueValidator = require("mongoose-unique-validator")
 const validator = require("validator")
 
+//Subschemas
+const briefInformationSchema = mongoose.Schema({
+  author: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  publisher: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  publicDate: {
+    type: Date,
+    required: true,
+    max: new Date(),
+  },
+
+  //normal
+  language: {
+    type: String,
+    default: "Tiếng Việt",
+    required:true,
+    trim: true
+  },
+  pages: {
+    type: Number,
+
+    validate(pages) {
+      if (!validator.isInt(String(pages)))
+        throw new Error(`${pages} is not an integer value`)
+      if (pages <= 0) throw new Error("Pages must be positive number")
+    },
+  },
+})
+
+const imageSchema = mongoose.Schema({
+    img: {
+      type: String,
+      required: true
+    },
+    altImg: {
+      type: String,
+    }
+})
+
+//////////////////////////////////////////////////////////
 //Schema
 const productSchema = mongoose.Schema({
   //Unique
@@ -27,74 +74,47 @@ const productSchema = mongoose.Schema({
   },
   quantity: {
     type: Number,
-    required: true,
     default: 0,
-    min: 0,
+    required: true,
+
+    validate(value) {
+        if(!validator.isInt(value.toString())) {
+          throw new Error('Quantity should be an integer')
+        }
+    }
+    //không xét min vì có thể âm
+    //số âm thể hiện người mua mua quá sản phẩm trong kho
+    // sản phẩm vẫn có thể  được nhập thêm vào kho // Sale sẽ quản lý 
   },
   description: {
     type: String,
     required: true,
     trim: true,
   },
-  fearture: {
+  feartured: { //flag nổi bật, bật/tắt
     type: Boolean,
-    require: true,
     default: false,
+    required: true
   },
-  status: {
+  status: { //able, disable 
     type: Boolean,
-    required: true,
     default: true,
+    required: true,
+
   },
-  briefInformation: {
-    //require
-    author: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    publisher: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    publicDate: {
-      type: Date,
-      required: true,
-      max: new Date(),
-    },
-
-    //normal
-    language: {
-      type: String,
-      default: "Tiếng Việt",
-      trim: true,
-    },
-    pages: {
-      type: Number,
-
-      validate(pages) {
-        if (!validator.isInt(String(pages)))
-          throw new Error(`${pages} is not an integer value`)
-        if (pages <= 0) throw new Error("Pages must be positive number")
-      },
-    },
+  briefInformation: { //thông tin chung, tác giả, nhà xuất bản, ...
+    type: briefInformationSchema,
+    required: true
   },
-  // thumbnail: {
-  //   type: Buffer,
-  //   required: true,
-  // },
+  thumbnail: {
+    type: String,
+    required: true,
+  },
 
-  //normal
-  // images: [
-  //   {
-  //     image: {
-  //       type: Buffer,
-  //       required: true,
-  //     },
-  //     imageAltDoc: String,
-  //   },
-  // ],
+  // normal
+  images: {
+    type: [imageSchema],
+  },
 
   // //ref
   category: {
@@ -103,11 +123,14 @@ const productSchema = mongoose.Schema({
     ref: "Category",
   }, //=> categoryId
 })
+
+
 productSchema.plugin(uniqueValidator)
+
 
 //middleware
 productSchema.pre("validate", function (next) {
-  if (this.salePrice >= this.listPrice) {
+  if (this.salePrice > this.listPrice) {
     this.invalidate(
       "salePrice",
       "Sale price is over list price",
@@ -119,25 +142,31 @@ productSchema.pre("validate", function (next) {
 })
 
 //Model
-const Product = mongoose.model("Product", productSchema)
+const Product = mongoose.model("product", productSchema)
 module.exports = Product
 
-//Test
-const product = new Product({
-  title: "Naruto tập 4",
-  listPrice: 10000,
-  salePrice: 8000,
-  description: "Đây là truyện tranh về Naruto shippuden",
-  briefInformation: {
-    author: "Honag Anh",
-    publisher: "NXB Giao Duc tre em",
-    pages: 100,
-    publicDate: "2022/06/08",
-  },
-  category: "123456789012345678901234",
-})
-// console.log(product)
-// product.validate((err) => {
-//   if (err) return console.log(err.message)
-//   console.log("GOOD")
+// //Test
+// const product = new Product({
+//   title: "Naruto tập 4",
+//   listPrice: 10000,
+//   salePrice: 8000,
+//   description: "Đây là truyện tranh về Naruto shippuden",
+//   briefInformation: {
+//     author: "Honag Anh",
+//     publisher: "NXB Giao Duc tre em",
+//     pages: 100,
+//     publicDate: "2022/06/08",
+//   },
+//   thumbnail:"NARUTO",
+//   category: "123456789012345678901234",
 // })
+
+// const test= async() => {
+//     try {
+//       await product.save()
+//     } catch (error) {
+//       console.log(error)
+//     }
+// }
+
+// test()
