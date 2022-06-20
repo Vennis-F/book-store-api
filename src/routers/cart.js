@@ -40,6 +40,7 @@ FLOW totalAmount:
 //POST /cart (Add item to cart - not check cart item duplicated)
 router.post("/", auth, authorize("guest", "customer"), async (req, res) => {
   try {
+    console.log(123)
     //Find and Check cart exist, if not create new
     let cart = await getCartorNewCart(req.user._id)
 
