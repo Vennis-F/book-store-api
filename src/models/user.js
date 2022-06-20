@@ -6,6 +6,18 @@ const jwt = require("jsonwebtoken")
 const Role = require("../models/role")
 require("../models/role")
 
+//SubSchema
+const imageSchema = mongoose.Schema({
+  img: {
+    type: String,
+    required: true,
+  },
+  altImg: {
+    type: String,
+  },
+})
+
+/////////////////////////////////////////////
 //Schema
 const userSchema = mongoose.Schema({
   //Unique
@@ -43,15 +55,15 @@ const userSchema = mongoose.Schema({
     required: true,
     default: true,
   },
-
-  //normal
   gender: {
     type: String,
+    required: true,
     trim: true,
     enum: ["M", "F", "D"],
   },
   phone: {
     type: String,
+    required: true,
     trim: true,
 
     validate(phone) {
@@ -62,8 +74,11 @@ const userSchema = mongoose.Schema({
   },
   address: {
     type: String,
+    required: true,
     trim: true,
   },
+
+  //normal
   tokens: [
     {
       token: {
@@ -72,6 +87,7 @@ const userSchema = mongoose.Schema({
       },
     },
   ],
+  avatar: imageSchema,
 
   //Ref (default ????)
   role: {
@@ -143,6 +159,7 @@ module.exports = User
 //   gender: "F",
 //   phone: "0387897777878",
 //   address: "sfd",
+//   avatar: { img: "link img" },
 //   role: "123456789012345678901234",
 // })
 // console.log(user)

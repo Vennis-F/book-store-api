@@ -42,9 +42,8 @@ app.use("/cart", cartRouter)
 app.use("/checkout", checkoutRouter)
 app.use("/orders", ordersRouter)
 
+require("./models/slider")
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`)
 })
-
-
-//git checkout exp

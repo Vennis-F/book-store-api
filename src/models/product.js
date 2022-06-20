@@ -24,8 +24,8 @@ const briefInformationSchema = mongoose.Schema({
   language: {
     type: String,
     default: "Tiếng Việt",
-    required:true,
-    trim: true
+    required: true,
+    trim: true,
   },
   pages: {
     type: Number,
@@ -39,13 +39,13 @@ const briefInformationSchema = mongoose.Schema({
 })
 
 const imageSchema = mongoose.Schema({
-    img: {
-      type: String,
-      required: true
-    },
-    altImg: {
-      type: String,
-    }
+  img: {
+    type: String,
+    required: true,
+  },
+  altImg: {
+    type: String,
+  },
 })
 
 //////////////////////////////////////////////////////////
@@ -78,33 +78,35 @@ const productSchema = mongoose.Schema({
     required: true,
 
     validate(value) {
-        if(!validator.isInt(value.toString())) {
-          throw new Error('Quantity should be an integer')
-        }
-    }
+      if (!validator.isInt(value.toString())) {
+        throw new Error("Quantity should be an integer")
+      }
+    },
     //không xét min vì có thể âm
     //số âm thể hiện người mua mua quá sản phẩm trong kho
-    // sản phẩm vẫn có thể  được nhập thêm vào kho // Sale sẽ quản lý 
+    // sản phẩm vẫn có thể  được nhập thêm vào kho // Sale sẽ quản lý
   },
   description: {
     type: String,
     required: true,
     trim: true,
   },
-  feartured: { //flag nổi bật, bật/tắt
+  feartured: {
+    //flag nổi bật, bật/tắt
     type: Boolean,
     default: false,
-    required: true
+    required: true,
   },
-  status: { //able, disable 
+  status: {
+    //able, disable
     type: Boolean,
     default: true,
     required: true,
-
   },
-  briefInformation: { //thông tin chung, tác giả, nhà xuất bản, ...
+  briefInformation: {
+    //thông tin chung, tác giả, nhà xuất bản, ...
     type: briefInformationSchema,
-    required: true
+    required: true,
   },
   thumbnail: {
     type: String,
@@ -116,7 +118,7 @@ const productSchema = mongoose.Schema({
     type: [imageSchema],
   },
 
-  // //ref
+  //ref
   category: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
@@ -124,9 +126,7 @@ const productSchema = mongoose.Schema({
   }, //=> categoryId
 })
 
-
 productSchema.plugin(uniqueValidator)
-
 
 //middleware
 productSchema.pre("validate", function (next) {
