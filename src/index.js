@@ -49,3 +49,13 @@ require("./models/slider");
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+const { saveCateCrawl } = require("./utils/crawl-data/dataCategory");
+const {
+  createDataCrawl,
+  saveDataCrawl,
+} = require("./utils/crawl-data/dataProduct");
+
+// saveCateCrawl();
+// createDataCrawl();
+// saveDataCrawl();

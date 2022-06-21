@@ -1,6 +1,6 @@
-const mongoose = require("mongoose")
-const uniqueValidator = require("mongoose-unique-validator")
-const validator = require("validator")
+const mongoose = require("mongoose");
+const uniqueValidator = require("mongoose-unique-validator");
+const validator = require("validator");
 
 //Subschemas
 const briefInformationSchema = mongoose.Schema({
@@ -32,11 +32,11 @@ const briefInformationSchema = mongoose.Schema({
 
     validate(pages) {
       if (!validator.isInt(String(pages)))
-        throw new Error(`${pages} is not an integer value`)
-      if (pages <= 0) throw new Error("Pages must be positive number")
+        throw new Error(`${pages} is not an integer value`);
+      if (pages <= 0) throw new Error("Pages must be positive number");
     },
   },
-})
+});
 
 const imageSchema = mongoose.Schema({
   img: {
@@ -46,7 +46,7 @@ const imageSchema = mongoose.Schema({
   altImg: {
     type: String,
   },
-})
+});
 
 //////////////////////////////////////////////////////////
 //Schema
@@ -55,7 +55,7 @@ const productSchema = mongoose.Schema({
   title: {
     type: String,
     required: true,
-    unique: true,
+    // unique: true,
     trim: true,
   },
 
@@ -79,7 +79,7 @@ const productSchema = mongoose.Schema({
 
     validate(value) {
       if (!validator.isInt(value.toString())) {
-        throw new Error("Quantity should be an integer")
+        throw new Error("Quantity should be an integer");
       }
     },
     //không xét min vì có thể âm
@@ -124,9 +124,9 @@ const productSchema = mongoose.Schema({
     required: true,
     ref: "Category",
   }, //=> categoryId
-})
+});
 
-productSchema.plugin(uniqueValidator)
+// productSchema.plugin(uniqueValidator);
 
 //middleware
 productSchema.pre("validate", function (next) {
@@ -135,15 +135,15 @@ productSchema.pre("validate", function (next) {
       "salePrice",
       "Sale price is over list price",
       this.salePrice
-    )
+    );
   }
 
-  next()
-})
+  next();
+});
 
 //Model
-const Product = mongoose.model("product", productSchema)
-module.exports = Product
+const Product = mongoose.model("product", productSchema);
+module.exports = Product;
 
 // //Test
 // const product = new Product({
@@ -161,51 +161,11 @@ module.exports = Product
 //   category: "123456789012345678901234",
 // })
 
-const data1 = new Product({
-  title: "Sách học ngoại ngữ Sách học ngoại ngữ ",
-  listPrice: 60000,
-  salePrice: 20000,
-  quantity: 10,
-  description: "Ok helo ae",
-  feartured: true,
-  status: true,
-  briefInformation: {
-    author: "Honag Anh",
-    publisher: "NXB Giao Duc tre em",
-    pages: 100,
-    publicDate: "2022/06/08",
-  },
-  thumbnail:
-    "https://cdn0.fahasa.com/media/catalog/product/z/3/z3097453775918_7ea22457f168a4de92d0ba8178a2257b.jpg",
-
-  category: "123456789012345678901234",
-})
-const data2 = new Product({
-  title: "Naruto tập 1",
-  listPrice: 1260000,
-  salePrice: 23000,
-  quantity: 1013,
-  description: "Ok helo ae",
-  feartured: true,
-  status: true,
-  briefInformation: {
-    author: "Honag Anh dsf",
-    publisher: "NXB Giao Duc tre em dsfa",
-    pages: 100,
-    publicDate: "2022/06/08",
-  },
-  thumbnail:
-    "https://cdn0.fahasa.com/media/catalog/product/d/r/dragon-ball-full-color---phan-bon---frieza-dai-de-_-tap-2_1.jpg",
-
-  category: "123456789012345678901234",
-})
-
 const test = async () => {
   try {
-    await data2.save()
+    await data3.save();
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-}
-
-// test()
+};
+// test();
