@@ -1,0 +1,410 @@
+[
+  {
+    "title": "Chú Thuật Hồi Chiến - Tập 4 - Bản Thường - Tặng Kèm Obi + Card Nhựa & Bao Sách",
+    "listPrice": 33333,
+    "salePrice": 30000,
+    "quantity": 611,
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error explicabo sint totam provident voluptatem impedit numquam, architecto quaerat at expedita iusto ipsa autem quas asperiores quibusdam omnis odit ea dolorum.",
+    "feartured": false,
+    "status": true,
+    "briefInormation": {
+      "author": "Nguyễn Hoàng Anh",
+      "publisher": "NXB Dân Trí",
+      "pages": 200,
+      "publicDate": "2020/10/10"
+    },
+    "thumbail": "https://cdn0.fahasa.com/media/catalog/product/6/0/600chu-thuat-4-mockup-ban-thuong.jpg",
+    "category": "123456789012345678901234"
+  },
+  {
+    "title": "Spy X Family - Tập 7 - Tặng Kèm Standee PVC",
+    "listPrice": 27777,
+    "salePrice": 25000,
+    "quantity": 886,
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error explicabo sint totam provident voluptatem impedit numquam, architecto quaerat at expedita iusto ipsa autem quas asperiores quibusdam omnis odit ea dolorum.",
+    "feartured": false,
+    "status": true,
+    "briefInormation": {
+      "author": "Nguyễn Hoàng Anh",
+      "publisher": "NXB Tổng hợp thành phố Hồ Chí Minh",
+      "pages": 200,
+      "publicDate": "2020/10/10"
+    },
+    "thumbail": "https://cdn0.fahasa.com/media/catalog/product/s/p/spy---family---tap-7-_b_a-1__1.jpg",
+    "category": "123456789012345678901234"
+  },
+  {
+    "title": "Nhóc Miko! Cô Bé Nhí Nhảnh - Tập 35 - Tặng Kèm Sticker (1 Miếng 6 Hình Dán)",
+    "listPrice": 22222,
+    "salePrice": 20000,
+    "quantity": 94,
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error explicabo sint totam provident voluptatem impedit numquam, architecto quaerat at expedita iusto ipsa autem quas asperiores quibusdam omnis odit ea dolorum.",
+    "feartured": false,
+    "status": true,
+    "briefInormation": {
+      "author": "Nguyễn Hoàng Anh",
+      "publisher": "NXB Hội Nhà văn",
+      "pages": 200,
+      "publicDate": "2020/10/10"
+    },
+    "thumbail": "https://cdn0.fahasa.com/media/catalog/product/8/9/8934974179108.jpg",
+    "category": "123456789012345678901234"
+  },
+  {
+    "title": "Văn Phòng Thám Tử Quái Vật - Tập 6",
+    "listPrice": 33333,
+    "salePrice": 30000,
+    "quantity": 297,
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error explicabo sint totam provident voluptatem impedit numquam, architecto quaerat at expedita iusto ipsa autem quas asperiores quibusdam omnis odit ea dolorum.",
+    "feartured": false,
+    "status": true,
+    "briefInormation": {
+      "author": "Nguyễn Hoàng Anh",
+      "publisher": "NXB chính trị quốc gia sự thật",
+      "pages": 200,
+      "publicDate": "2020/10/10"
+    },
+    "thumbail": "https://cdn0.fahasa.com/media/catalog/product/8/9/8934974179085_1.jpg",
+    "category": "123456789012345678901234"
+  },
+  {
+    "title": "Cuộn Bao Sách Nylon TP (10 Tờ/Cuộn)",
+    "listPrice": 16666,
+    "salePrice": 15000,
+    "quantity": 515,
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error explicabo sint totam provident voluptatem impedit numquam, architecto quaerat at expedita iusto ipsa autem quas asperiores quibusdam omnis odit ea dolorum.",
+    "feartured": false,
+    "status": true,
+    "briefInormation": {
+      "author": "Nguyễn Hoàng Anh",
+      "publisher": "NXB Hội Nhà văn",
+      "pages": 200,
+      "publicDate": "2020/10/10"
+    },
+    "thumbail": "https://cdn0.fahasa.com/media/catalog/product/1/9/1901011410903-_1_.jpg",
+    "category": "123456789012345678901234"
+  },
+  {
+    "title": "Komi - Nữ Thần Sợ Giao Tiếp - Tập 10 - Tặng Kèm PVC Card",
+    "listPrice": 27777,
+    "salePrice": 25000,
+    "quantity": 861,
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error explicabo sint totam provident voluptatem impedit numquam, architecto quaerat at expedita iusto ipsa autem quas asperiores quibusdam omnis odit ea dolorum.",
+    "feartured": false,
+    "status": true,
+    "briefInormation": {
+      "author": "Nguyễn Hoàng Anh",
+      "publisher": "NXB giao thông vận tải",
+      "pages": 200,
+      "publicDate": "2020/10/10"
+    },
+    "thumbail": "https://cdn0.fahasa.com/media/catalog/product/k/o/komi---nu-than-so-giao-tiep---tap-10_1.jpg",
+    "category": "123456789012345678901234"
+  },
+  {
+    "title": "Blue Period - Tập 1 - Tặng Kèm Bookmark Giấy 2 Mặt + Card Nhựa PVC",
+    "listPrice": 53333,
+    "salePrice": 48000,
+    "quantity": 160,
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error explicabo sint totam provident voluptatem impedit numquam, architecto quaerat at expedita iusto ipsa autem quas asperiores quibusdam omnis odit ea dolorum.",
+    "feartured": false,
+    "status": true,
+    "briefInormation": {
+      "author": "Nguyễn Hoàng Anh",
+      "publisher": "NXB giáo dục",
+      "pages": 200,
+      "publicDate": "2020/10/10"
+    },
+    "thumbail": "https://cdn0.fahasa.com/media/catalog/product/a/n/anh-bia-blue-period_tap-1_1.jpg",
+    "category": "123456789012345678901234"
+  },
+  {
+    "title": "Chú Thuật Hồi Chiến - Tập 3 - Tặng Kèm Obi Và Card Nhựa",
+    "listPrice": 33333,
+    "salePrice": 30000,
+    "quantity": 866,
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error explicabo sint totam provident voluptatem impedit numquam, architecto quaerat at expedita iusto ipsa autem quas asperiores quibusdam omnis odit ea dolorum.",
+    "feartured": false,
+    "status": true,
+    "briefInormation": {
+      "author": "Nguyễn Hoàng Anh",
+      "publisher": "NXB lao động",
+      "pages": 200,
+      "publicDate": "2020/10/10"
+    },
+    "thumbail": "https://cdn0.fahasa.com/media/catalog/product/6/0/600chu-thuat-hoi-chien---tap-3---_ban-thuong_-mockup.jpg",
+    "category": "123456789012345678901234"
+  },
+  {
+    "title": "My Hero Academia - Học Viện Siêu Anh Hùng - Tập 29: Bakugo Katsuki: Trỗi Dậy - Tặng Kèm Bookmark Pro Hero",
+    "listPrice": 27777,
+    "salePrice": 25000,
+    "quantity": 811,
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error explicabo sint totam provident voluptatem impedit numquam, architecto quaerat at expedita iusto ipsa autem quas asperiores quibusdam omnis odit ea dolorum.",
+    "feartured": false,
+    "status": true,
+    "briefInormation": {
+      "author": "Nguyễn Hoàng Anh",
+      "publisher": "NXB Dân Trí",
+      "pages": 200,
+      "publicDate": "2020/10/10"
+    },
+    "thumbail": "https://cdn0.fahasa.com/media/catalog/product/h/o/hoc-vien-sieu-anh-hung---tap-29---troi-day_1.jpg",
+    "category": "123456789012345678901234"
+  },
+  {
+    "title": "My Hero Academia - Học Viện Siêu Anh Hùng - Tập 29: Bakugo Katsuki: Trỗi Dậy - Tặng Kèm Bookmark Pro Hero + Poster 40x60cm",
+    "listPrice": 27777,
+    "salePrice": 25000,
+    "quantity": 153,
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error explicabo sint totam provident voluptatem impedit numquam, architecto quaerat at expedita iusto ipsa autem quas asperiores quibusdam omnis odit ea dolorum.",
+    "feartured": false,
+    "status": true,
+    "briefInormation": {
+      "author": "Nguyễn Hoàng Anh",
+      "publisher": "NXB Văn Học",
+      "pages": 200,
+      "publicDate": "2020/10/10"
+    },
+    "thumbail": "https://cdn0.fahasa.com/media/catalog/product/h/o/hoc-vien-sieu-anh-hung---tap-29---troi-day_2.jpg",
+    "category": "123456789012345678901234"
+  },
+  {
+    "title": "MONSTER #8 - Tập 2 - Bản Đặc Biệt - Dark Ver - Tặng Kèm Set Bookmark Hai Lớp, Thiết Kế Độc Quyền Cho Thị Trường Việt Nam",
+    "listPrice": 75555,
+    "salePrice": 68000,
+    "quantity": 940,
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error explicabo sint totam provident voluptatem impedit numquam, architecto quaerat at expedita iusto ipsa autem quas asperiores quibusdam omnis odit ea dolorum.",
+    "feartured": false,
+    "status": true,
+    "briefInormation": {
+      "author": "Nguyễn Hoàng Anh",
+      "publisher": "NXB giao thông vận tải",
+      "pages": 200,
+      "publicDate": "2020/10/10"
+    },
+    "thumbail": "https://cdn0.fahasa.com/media/catalog/product/z/3/z3484086522567_a12469f8fc99a45d192414fc11c2bd36.jpg",
+    "category": "123456789012345678901234"
+  },
+  {
+    "title": "Quán Rượu Dị Giới \"Nobu\" - Tập 5 - Tặng Kèm Bookmark Giấy Hình Món Ăn",
+    "listPrice": 44444,
+    "salePrice": 40000,
+    "quantity": 504,
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error explicabo sint totam provident voluptatem impedit numquam, architecto quaerat at expedita iusto ipsa autem quas asperiores quibusdam omnis odit ea dolorum.",
+    "feartured": false,
+    "status": true,
+    "briefInormation": {
+      "author": "Nguyễn Hoàng Anh",
+      "publisher": "NXB Dân Trí",
+      "pages": 200,
+      "publicDate": "2020/10/10"
+    },
+    "thumbail": "https://cdn0.fahasa.com/media/catalog/product/8/9/8934974179078.jpg",
+    "category": "123456789012345678901234"
+  },
+  {
+    "title": "Nhà Có 5 Nàng Dâu - Tập 1",
+    "listPrice": 27777,
+    "salePrice": 25000,
+    "quantity": 372,
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error explicabo sint totam provident voluptatem impedit numquam, architecto quaerat at expedita iusto ipsa autem quas asperiores quibusdam omnis odit ea dolorum.",
+    "feartured": false,
+    "status": true,
+    "briefInormation": {
+      "author": "Nguyễn Hoàng Anh",
+      "publisher": "NXB Tổng hợp thành phố Hồ Chí Minh",
+      "pages": 200,
+      "publicDate": "2020/10/10"
+    },
+    "thumbail": "https://cdn0.fahasa.com/media/catalog/product/n/h/nha-co-5-nang-dau---tap-1.jpg",
+    "category": "123456789012345678901234"
+  },
+  {
+    "title": "MONSTER #8 - Tập 2 - Bản Đặc Biệt - Bright Ver - Tặng Kèm 1 Set Card Holder + Card Profile Nhân Vật",
+    "listPrice": 75555,
+    "salePrice": 68000,
+    "quantity": 194,
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error explicabo sint totam provident voluptatem impedit numquam, architecto quaerat at expedita iusto ipsa autem quas asperiores quibusdam omnis odit ea dolorum.",
+    "feartured": false,
+    "status": true,
+    "briefInormation": {
+      "author": "Nguyễn Hoàng Anh",
+      "publisher": "NXB Tư pháp",
+      "pages": 200,
+      "publicDate": "2020/10/10"
+    },
+    "thumbail": "https://cdn0.fahasa.com/media/catalog/product/z/3/z3484086518472_2d66447cb6658bd6f79b09692c2d0e68_1.jpg",
+    "category": "123456789012345678901234"
+  },
+  {
+    "title": "Nhà Có 5 Nàng Dâu - Tập 8",
+    "listPrice": 27777,
+    "salePrice": 25000,
+    "quantity": 209,
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error explicabo sint totam provident voluptatem impedit numquam, architecto quaerat at expedita iusto ipsa autem quas asperiores quibusdam omnis odit ea dolorum.",
+    "feartured": false,
+    "status": true,
+    "briefInormation": {
+      "author": "Nguyễn Hoàng Anh",
+      "publisher": "NXB Trẻ",
+      "pages": 200,
+      "publicDate": "2020/10/10"
+    },
+    "thumbail": "https://cdn0.fahasa.com/media/catalog/product/n/h/nha-co-nam-nang-dau-_-tap-8_2.jpg",
+    "category": "123456789012345678901234"
+  },
+  {
+    "title": "Nhà Có 5 Nàng Dâu - Tập 2",
+    "listPrice": 27777,
+    "salePrice": 25000,
+    "quantity": 562,
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error explicabo sint totam provident voluptatem impedit numquam, architecto quaerat at expedita iusto ipsa autem quas asperiores quibusdam omnis odit ea dolorum.",
+    "feartured": false,
+    "status": true,
+    "briefInormation": {
+      "author": "Nguyễn Hoàng Anh",
+      "publisher": "NXB lao động",
+      "pages": 200,
+      "publicDate": "2020/10/10"
+    },
+    "thumbail": "https://cdn0.fahasa.com/media/catalog/product/n/h/nha-co-5-nang-dau---tap-2---bia-ao.jpg",
+    "category": "123456789012345678901234"
+  },
+  {
+    "title": "Komi - Nữ Thần Sợ Giao Tiếp - Tập 1",
+    "listPrice": 27777,
+    "salePrice": 25000,
+    "quantity": 985,
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error explicabo sint totam provident voluptatem impedit numquam, architecto quaerat at expedita iusto ipsa autem quas asperiores quibusdam omnis odit ea dolorum.",
+    "feartured": false,
+    "status": true,
+    "briefInormation": {
+      "author": "Nguyễn Hoàng Anh",
+      "publisher": "NXB Dân Trí",
+      "pages": 200,
+      "publicDate": "2020/10/10"
+    },
+    "thumbail": "https://cdn0.fahasa.com/media/catalog/product/k/o/komi_nu-than-so-giao-tiep---tap-1.jpg",
+    "category": "123456789012345678901234"
+  },
+  {
+    "title": "Nhà Có 5 Nàng Dâu - Tập 4",
+    "listPrice": 27777,
+    "salePrice": 25000,
+    "quantity": 878,
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error explicabo sint totam provident voluptatem impedit numquam, architecto quaerat at expedita iusto ipsa autem quas asperiores quibusdam omnis odit ea dolorum.",
+    "feartured": false,
+    "status": true,
+    "briefInormation": {
+      "author": "Nguyễn Hoàng Anh",
+      "publisher": "NXB Hội Nhà văn",
+      "pages": 200,
+      "publicDate": "2020/10/10"
+    },
+    "thumbail": "https://cdn0.fahasa.com/media/catalog/product/n/h/nha-co-5-nang-dau---tap-4-_bia-ao_.jpg",
+    "category": "123456789012345678901234"
+  },
+  {
+    "title": "Ajin - BoxSet Số 2 (Tập 7 Đến Tập 12) - Tặng Kèm Bookmark",
+    "listPrice": 333333,
+    "salePrice": 300000,
+    "quantity": 516,
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error explicabo sint totam provident voluptatem impedit numquam, architecto quaerat at expedita iusto ipsa autem quas asperiores quibusdam omnis odit ea dolorum.",
+    "feartured": false,
+    "status": true,
+    "briefInormation": {
+      "author": "Nguyễn Hoàng Anh",
+      "publisher": "NXB Đại Học Sư Phạm TPHCM",
+      "pages": 200,
+      "publicDate": "2020/10/10"
+    },
+    "thumbail": "https://cdn0.fahasa.com/media/catalog/product/a/j/ajin---boxset-s_-2.jpg",
+    "category": "123456789012345678901234"
+  },
+  {
+    "title": "Chú Thuật Hồi Chiến - Tập 2 - Tặng Kèm Obi Và Thẻ Bo Góc Nhựa",
+    "listPrice": 33333,
+    "salePrice": 30000,
+    "quantity": 586,
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error explicabo sint totam provident voluptatem impedit numquam, architecto quaerat at expedita iusto ipsa autem quas asperiores quibusdam omnis odit ea dolorum.",
+    "feartured": false,
+    "status": true,
+    "briefInormation": {
+      "author": "Nguyễn Hoàng Anh",
+      "publisher": "NXB Thông tin và Truyền thông",
+      "pages": 200,
+      "publicDate": "2020/10/10"
+    },
+    "thumbail": "https://cdn0.fahasa.com/media/catalog/product/c/h/chu_thuat_hoi_chien_-_tap_2_-_ban_thuong_1_1.jpg",
+    "category": "123456789012345678901234"
+  },
+  {
+    "title": "Nhà Có 5 Nàng Dâu - Tập 3",
+    "listPrice": 27777,
+    "salePrice": 25000,
+    "quantity": 311,
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error explicabo sint totam provident voluptatem impedit numquam, architecto quaerat at expedita iusto ipsa autem quas asperiores quibusdam omnis odit ea dolorum.",
+    "feartured": false,
+    "status": true,
+    "briefInormation": {
+      "author": "Nguyễn Hoàng Anh",
+      "publisher": "NXB chính trị quốc gia sự thật",
+      "pages": 200,
+      "publicDate": "2020/10/10"
+    },
+    "thumbail": "https://cdn0.fahasa.com/media/catalog/product/n/h/nha-co-5-nang-dau---tap-3.jpg",
+    "category": "123456789012345678901234"
+  },
+  {
+    "title": "Nhà Có 5 Nàng Dâu - Tập 12",
+    "listPrice": 27777,
+    "salePrice": 25000,
+    "quantity": 668,
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error explicabo sint totam provident voluptatem impedit numquam, architecto quaerat at expedita iusto ipsa autem quas asperiores quibusdam omnis odit ea dolorum.",
+    "feartured": false,
+    "status": true,
+    "briefInormation": {
+      "author": "Nguyễn Hoàng Anh",
+      "publisher": "NXB Văn Học",
+      "pages": 200,
+      "publicDate": "2020/10/10"
+    },
+    "thumbail": "https://cdn0.fahasa.com/media/catalog/product/n/h/nha-co-5-nang-dau---tap-12.jpg",
+    "category": "123456789012345678901234"
+  },
+  {
+    "title": "Văn Phòng Thám Tử Quái Vật - Tập 5 - Tặng Kèm Quyển Sticky Note 20 Trang 7.5x7.5",
+    "listPrice": 33333,
+    "salePrice": 30000,
+    "quantity": 733,
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error explicabo sint totam provident voluptatem impedit numquam, architecto quaerat at expedita iusto ipsa autem quas asperiores quibusdam omnis odit ea dolorum.",
+    "feartured": false,
+    "status": true,
+    "briefInormation": {
+      "author": "Nguyễn Hoàng Anh",
+      "publisher": "NXB Dân Trí",
+      "pages": 200,
+      "publicDate": "2020/10/10"
+    },
+    "thumbail": "https://cdn0.fahasa.com/media/catalog/product/n/x/nxbtre_full_18452022_034543.jpg",
+    "category": "123456789012345678901234"
+  },
+  {
+    "title": "Birdmen - Tập 1 - Tặng Kèm Postcard",
+    "listPrice": 33333,
+    "salePrice": 30000,
+    "quantity": 294,
+    "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error explicabo sint totam provident voluptatem impedit numquam, architecto quaerat at expedita iusto ipsa autem quas asperiores quibusdam omnis odit ea dolorum.",
+    "feartured": false,
+    "status": true,
+    "briefInormation": {
+      "author": "Nguyễn Hoàng Anh",
+      "publisher": "NXB Đại Học Sư Phạm TPHCM",
+      "pages": 200,
+      "publicDate": "2020/10/10"
+    },
+    "thumbail": "https://cdn0.fahasa.com/media/catalog/product/b/i/birdmen---tap-1_1.jpg",
+    "category": "123456789012345678901234"
+  }
+]

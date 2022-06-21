@@ -161,12 +161,51 @@ module.exports = Product
 //   category: "123456789012345678901234",
 // })
 
-// const test= async() => {
-//     try {
-//       await product.save()
-//     } catch (error) {
-//       console.log(error)
-//     }
-// }
+const data1 = new Product({
+  title: "Sách học ngoại ngữ Sách học ngoại ngữ ",
+  listPrice: 60000,
+  salePrice: 20000,
+  quantity: 10,
+  description: "Ok helo ae",
+  feartured: true,
+  status: true,
+  briefInformation: {
+    author: "Honag Anh",
+    publisher: "NXB Giao Duc tre em",
+    pages: 100,
+    publicDate: "2022/06/08",
+  },
+  thumbnail:
+    "https://cdn0.fahasa.com/media/catalog/product/z/3/z3097453775918_7ea22457f168a4de92d0ba8178a2257b.jpg",
+
+  category: "123456789012345678901234",
+})
+const data2 = new Product({
+  title: "Naruto tập 1",
+  listPrice: 1260000,
+  salePrice: 23000,
+  quantity: 1013,
+  description: "Ok helo ae",
+  feartured: true,
+  status: true,
+  briefInformation: {
+    author: "Honag Anh dsf",
+    publisher: "NXB Giao Duc tre em dsfa",
+    pages: 100,
+    publicDate: "2022/06/08",
+  },
+  thumbnail:
+    "https://cdn0.fahasa.com/media/catalog/product/d/r/dragon-ball-full-color---phan-bon---frieza-dai-de-_-tap-2_1.jpg",
+
+  category: "123456789012345678901234",
+})
+
+const test = async () => {
+  try {
+    await data2.save()
+  } catch (error) {
+    console.log(error)
+  }
+}
 
 // test()
