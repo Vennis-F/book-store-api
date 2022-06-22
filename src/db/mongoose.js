@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 // "C:\Program Files\MongoDB\Server\5.0\bin\mongod.exe" --dbpath="c:\data\db"
 
@@ -7,4 +7,4 @@ mongoose
     autoIndex: false,
   })
   .then(() => console.log("DB mongodb connection is ON"))
-  .catch(() => console.log("DB mongodb connection FAIL"))
+  .catch(() => console.log("DB mongodb connection FAIL"));
