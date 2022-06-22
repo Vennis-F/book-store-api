@@ -13,17 +13,18 @@ const getCartorNewCart = async (user) => {
 //Check enough quantity of product: return quantity need
 const cEnoughQuantity = (qProduct, qNeed) => {
   if (qProduct < qNeed)
-    throw new Error(`Quantity is not enough (only ${qProduct} left)`);
+    throw new Error(
+      `Số lượng sản phẩm không đủ (chỉ còn ${qProduct} sản phẩm)`
+    );
   return qNeed;
 };
 
 //Increase cart item quantity
 const uCartItem = (cart, productId, qProduct, qNeed) => {
   cart.items.forEach((item) => {
-    if (item.productInfo.toString() === productId) {
-      cart.totalAmount -= item.quantity * item.amount;
-      item.quantity = cEnoughQuantity(qProduct, item.quantity + qNeed);
-      cart.totalAmount += item.quantity * item.amount;
+    if (item.product.toString() === productId) {
+      //Update cart item quantity
+      item.quantity = cEnoughQuantity(qProduct, qNeed + item.quantity);
     }
   });
 };
@@ -37,14 +38,14 @@ const calcTotalAmount = (cart) =>
 //Add new cart item
 const addCartItem = (cart, product, qNeed) => {
   //Case: Cart item is not exist, Add new cart item
-  const totalAmount = cart.totalAmount + product.salePrice * qNeed;
   const cartItem = {
     title: product.title,
     quantity: qNeed,
     amount: product.salePrice,
-    productInfo: product._id,
+    totalAmount: 0,
+    product: product._id,
   };
-  cart.totalAmount = totalAmount;
+
   cart.items.push({ ...cartItem });
 };
 

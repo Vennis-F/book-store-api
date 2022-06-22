@@ -42,14 +42,15 @@ router.post("/", auth, authorize("guest", "customer"), async (req, res) => {
   try {
     //Find and Check cart exist, if not create new
     let cart = await getCartorNewCart(req.user._id);
-    console.log(cart);
 
     //Check product exist and Check product available
     const product = await Product.findById(req.body.productId);
+
     if (!product)
       return res.status(404).send({
         error: `Product not found`,
       });
+
     if (!product.status || product.quantity === 0)
       throw new Error("Product is not available or quantity is only 0 ");
 
@@ -59,24 +60,23 @@ router.post("/", auth, authorize("guest", "customer"), async (req, res) => {
     //Check cart duplicated
     const cartItemDuplicated = await Cart.findOne({
       _id: cart._id,
-      "items.productInfo": req.body.productId,
+      "items.product": req.body.productId,
     });
     console.log(cartItemDuplicated);
 
     if (cartItemDuplicated) {
-      console.log(345);
       //Case: cart item is duplicated
       uCartItem(cart, req.body.productId, product.quantity, qNeed);
     } else {
       //Case: Cart item is not exist
-      console.log(123);
       addCartItem(cart, product, qNeed);
     }
 
     //Saved cart
-    const cartSaved = await cart.save();
+    const cartSaved = await cart.save({ validateModifiedOnly: true });
     res.status(201).send(cartSaved);
   } catch (e) {
+    console.log(e);
     if (e.name === "CastError" && e.kind === "ObjectId")
       return res.status(400).send({ error: "Invalid ID" });
     res.status(400).send({ error: e.message });
@@ -113,9 +113,19 @@ router.get("/", auth, authorize("guest", "customer"), async (req, res) => {
   try {
     //Get cart or new cart and Check cart empty
     let cart = await getCartorNewCart(req.user._id);
+
+    //Populate product
+    if (cart) {
+      console.log(cart.items.length);
+      for (let i = 0; i < cart.items.length; i++) {
+        await cart.populate({ path: `items.${i}.product`, model: "product" });
+      }
+    }
+
     // if (cart.items.length === 0) throw new Error("Cart is empty")
     res.status(200).send(cart);
   } catch (e) {
+    console.log(e.message);
     res.status(404).send({ error: e.message });
   }
 });
