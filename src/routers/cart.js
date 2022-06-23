@@ -85,24 +85,26 @@ router.post("/", auth, authorize("guest", "customer"), async (req, res) => {
 
 //PATCH /cart (Update cart quantity - không check case chưa có cartitem exist)
 router.patch("/", auth, authorize("guest", "customer"), async (req, res) => {
+  //Body: {cartItemId, quantity}
+  const { cartItemId, quantity: quantityNeed } = req.body;
+
   try {
     //Check cart exist
     let cart = await getCartorNewCart(req.user._id);
     if (cart.items.length === 0)
       return res.status(404).send({ error: "Cart is empty" });
 
-    //Update cart item
-    const product = await Product.findById(getProductId(cart, req.body.key));
+    //Update cart item quantity
+    const product = await Product.findById(getProductId(cart, cartItemId));
     cart.items.forEach((item) => {
-      if (item._id.toString() === req.body.key) {
-        item.quantity = cEnoughQuantity(product.quantity, req.body.quantity);
-        cart.totalAmount = calcTotalAmount(cart);
+      if (item._id.toString() === cartItemId) {
+        item.quantity = cEnoughQuantity(product.quantity, quantityNeed);
       }
     });
 
     //Saved cart
-    await cart.save();
-    res.status(200).send(cart);
+    const cartSaved = await cart.save();
+    res.status(200).send(cartSaved);
   } catch (e) {
     res.status(400).send({ error: e.message });
   }
@@ -116,7 +118,6 @@ router.get("/", auth, authorize("guest", "customer"), async (req, res) => {
 
     //Populate product
     if (cart) {
-      console.log(cart.items.length);
       for (let i = 0; i < cart.items.length; i++) {
         await cart.populate({ path: `items.${i}.product`, model: "product" });
       }
@@ -165,12 +166,7 @@ router.delete(
 
       //delete cart item and update totalAmount
       cart.items = cart.items.filter((item) => {
-        const isMatch = item._id.toString() === req.params.key;
-        if (isMatch) {
-          cart.totalAmount -= item.quantity * item.amount;
-          return false;
-        }
-        return true;
+        return item._id.toString() !== req.params.key;
       });
 
       //Check id cart item not found
@@ -178,8 +174,9 @@ router.delete(
         return res.status(400).send({ error: "Cart item id not found" });
 
       //Saved cart
-      // await cart.save()
-      res.status(200).send(cart);
+      const cartSaved = await cart.save({ validateModifiedOnly: true });
+      console.log(cartSaved);
+      res.status(200).send(cartSaved);
     } catch (e) {
       res.status(500).send(e.message);
     }

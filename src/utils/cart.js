@@ -53,8 +53,8 @@ const addCartItem = (cart, product, qNeed) => {
 const getProductId = (cart, idCartItem) => {
   let productId = "";
   cart.items.forEach((item) => {
-    if (item._id.toString() === idCartItem)
-      return (productId = item.productInfo);
+    console.log(item._id.toString(), idCartItem);
+    if (item._id.toString() === idCartItem) return (productId = item.product);
   });
   if (productId) return productId;
   throw new Error("Invalid key");
