@@ -12,20 +12,24 @@ router.post("/", auth, authorize("guest", "customer"), async (req, res) => {
     //Check lại vì trong lúc mình đặt hàng có thể đã hết hàng
     const cart = await Cart.findOne({ owner: req.user._id });
     let isValidCartItem = true;
+    let msgNotEQuantity = [];
 
     for (let i = 0; i < cart.items.length; i++) {
-      await cart.populate(`items.${i}.product`);
-      // console.log(cart)
-      const qProduct = cart.items[i].productInfo.quantity;
+      await cart.populate({ path: `items.${i}.product`, model: "product" });
+      const product = cart.items[i].product;
+      const qProduct = product.quantity;
       const qNeed = cart.items[i].quantity;
-      if (qProduct < qNeed) isValidCartItem = false;
+      if (qProduct < qNeed) {
+        isValidCartItem = false;
+        msgNotEQuantity.push(
+          `Sách ${product.title} chỉ còn (${qProduct} sản phẩm)`
+        );
+      }
     }
 
     //If not response 400
     if (!isValidCartItem)
-      return res
-        .status(400)
-        .send({ error: "Quantity of product is not enough" });
+      return res.status(400).send({ error: msgNotEQuantity });
 
     //Send status 200
     res.send();
@@ -53,29 +57,26 @@ router.post("/", auth, authorize("guest", "customer"), async (req, res) => {
 */
 
 //GET /checkout/receive-information
-router.get("/", auth, authorize("guest", "customer"), async (req, res) => {
-  try {
-    const orders = await Order.find({ owner: req.user._id }).sort({
-      createdAt: -1,
-    });
-    const receiverInfo = req.session.receiverInfo;
+router.get(
+  "/receive-information",
+  auth,
+  authorize("guest", "customer"),
+  async (req, res) => {
+    try {
+      //Nếu có session
+      if (req.session.receiverInfo) return res.send(req.session.receiverInfo);
 
-    //Nếu không có order lẫn session: return 404 and thì tạo mới
-    if (orders.length === 0 && !receiverInfo) {
-      return res.status(404).send(undefined);
+      //Nếu là user, nhưng không có session: return data and setSession cho nó
+      const { fullName, email, gender, phone, address } = req.user;
+      const receiverInfo = { fullName, email, gender, phone, address };
+      req.session.receiverInfo = receiverInfo;
+
+      res.send(receiverInfo);
+    } catch (error) {
+      res.status(500).send({ error: error.message });
     }
-
-    //Nếu có session
-    if (receiverInfo) return res.send(receiverInfo);
-
-    //Nếu có order, nhưng không có session: return data and setSession cho nó
-    const { address, receiverName, phone } = orders[0];
-    req.session.receiverInfo = { address, receiverName, phone };
-    res.send(req.session.receiverInfo);
-  } catch (error) {
-    res.status(500).send({ error: error.message });
   }
-});
+);
 
 //LƯU ĐỊA CHỈ: invalid return 400 or 500, valid return info và lưu vào session
 //POST /checkout/receive-information (case all field are full)
@@ -84,14 +85,21 @@ router.post(
   auth,
   authorize("guest", "customer"),
   async (req, res) => {
-    const { address, phone, receiverName } = req.body;
+    const { fullName, email, gender, phone, address, notes } = req.body;
 
     try {
       //Check exist
-      if (!address || !phone || !receiverName) return res.sendStatus(400);
+      if (!address || !phone || !fullName || !gender || !email)
+        return res.sendStatus(400);
 
       //Check empty string
-      if (!address.trim() || !phone.trim() || !receiverName.trim())
+      if (
+        !address.trim() ||
+        !phone.trim() ||
+        !fullName.trim() ||
+        !phone.trim() ||
+        !email.trim()
+      )
         return res.sendStatus(400);
 
       //Check valid phoneNumber:
