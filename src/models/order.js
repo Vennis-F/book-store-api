@@ -8,7 +8,7 @@ const orderItemSchema = mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    unique: true,
+    // unique: true, //Không nên dùng vì nó so document với nhau chứ ko phải trong 1 document
   },
   quantity: {
     type: Number,

@@ -12,9 +12,10 @@ router.post("/", auth, authorize("guest", "customer"), async (req, res) => {
     //Check all cart item is valid
     //Check lại vì trong lúc mình đặt hàng có thể đã hết hàng
     const cart = await Cart.findOne({ owner: req.user._id });
-    let msgNotEQuantity = isValidCartItem(cart);
+    let msgNotEQuantity = await isValidCartItem(cart);
 
     //If not response 400
+    console.log(msgNotEQuantity);
     if (msgNotEQuantity.length > 0)
       return res.status(400).send({ error: msgNotEQuantity });
 
@@ -140,7 +141,7 @@ router.post(
           .send({ error: "Cart is not exist or Cart items length 0" });
 
       //Check lại vì trong lúc mình đặt hàng có thể đã hết hàng
-      let msgNotEQuantity = isValidCartItem(cart);
+      let msgNotEQuantity = await isValidCartItem(cart);
       if (msgNotEQuantity.length > 0)
         return res.status(400).send({ error: msgNotEQuantity });
 
