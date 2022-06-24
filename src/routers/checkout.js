@@ -4,6 +4,7 @@ const Cart = require("../models/cart");
 const router = require("express").Router();
 const validator = require("validator");
 const Order = require("../models/order");
+const { isValidCartItem } = require("../utils/cart");
 
 //POST /checkout (not check exist cart or cart empty)
 router.post("/", auth, authorize("guest", "customer"), async (req, res) => {
@@ -11,24 +12,10 @@ router.post("/", auth, authorize("guest", "customer"), async (req, res) => {
     //Check all cart item is valid
     //Check lại vì trong lúc mình đặt hàng có thể đã hết hàng
     const cart = await Cart.findOne({ owner: req.user._id });
-    let isValidCartItem = true;
-    let msgNotEQuantity = [];
-
-    for (let i = 0; i < cart.items.length; i++) {
-      await cart.populate({ path: `items.${i}.product`, model: "product" });
-      const product = cart.items[i].product;
-      const qProduct = product.quantity;
-      const qNeed = cart.items[i].quantity;
-      if (qProduct < qNeed) {
-        isValidCartItem = false;
-        msgNotEQuantity.push(
-          `Sách ${product.title} chỉ còn (${qProduct} sản phẩm)`
-        );
-      }
-    }
+    let msgNotEQuantity = isValidCartItem(cart);
 
     //If not response 400
-    if (!isValidCartItem)
+    if (msgNotEQuantity.length > 0)
       return res.status(400).send({ error: msgNotEQuantity });
 
     //Send status 200
@@ -64,6 +51,7 @@ router.get(
   async (req, res) => {
     try {
       //Nếu có session
+      console.log(req.session.receiverInfo);
       if (req.session.receiverInfo) return res.send(req.session.receiverInfo);
 
       //Nếu là user, nhưng không có session: return data and setSession cho nó
@@ -85,14 +73,17 @@ router.post(
   auth,
   authorize("guest", "customer"),
   async (req, res) => {
-    const { fullName, email, gender, phone, address, notes } = req.body;
+    const { fullName, email, gender, phone, address, note } = req.body;
 
     try {
+      console.log(fullName, email, gender, phone, address, note);
       //Check exist
       if (!address || !phone || !fullName || !gender || !email)
         return res.sendStatus(400);
+      console.log(3465);
 
       //Check empty string
+      console.log(fullName, email, gender, phone, address, note);
       if (
         !address.trim() ||
         !phone.trim() ||
@@ -102,21 +93,26 @@ router.post(
       )
         return res.sendStatus(400);
 
+      console.log(123);
       //Check valid phoneNumber:
       if (!validator.isMobilePhone(phone.trim()))
-        return res.status(400).send({ error: "Not valid phone number" });
+        return res.status(400).send({ error: "Số điện thoại không hợp lệ" });
 
       //Set receive information to session
       const receiverInfo = {
+        fullName: fullName.trim(),
+        email: email.trim(),
+        gender: gender.trim(),
+        phone: phone.trim(),
         address: address.trim(),
-        phone,
-        receiverName: receiverName.trim(),
+        note: note?.trim(),
       };
       req.session.receiverInfo = receiverInfo;
 
       res.send(receiverInfo);
     } catch (error) {
-      res.statu(500).send({ error });
+      console.log(error);
+      res.status(500).send({ error });
     }
   }
 );
@@ -129,6 +125,7 @@ router.post(
   authorize("guest", "customer"),
   async (req, res) => {
     try {
+      console.log(123);
       //Check receiverInfor data exist
       if (!req.session.receiverInfo)
         return res
@@ -142,19 +139,35 @@ router.post(
           .status(400)
           .send({ error: "Cart is not exist or Cart items length 0" });
 
+      //Check lại vì trong lúc mình đặt hàng có thể đã hết hàng
+      let msgNotEQuantity = isValidCartItem(cart);
+      if (msgNotEQuantity.length > 0)
+        return res.status(400).send({ error: msgNotEQuantity });
+
       //Create overiew order
-      const { address, receiverName, phone } = req.session.receiverInfo;
+      const {
+        address,
+        fullName: receiverName,
+        phone,
+        email,
+        gender,
+        note,
+      } = req.session.receiverInfo;
       const order = new Order({
         owner: req.user._id,
+        totalCost: cart.totalCost,
+        items: cart.items,
         address,
         receiverName,
         phone,
-        totalAmount: cart.totalAmount,
-        items: cart.items,
+        email,
+        gender,
+        note,
       });
       const savedOrder = await order.save();
       res.status(201).send(savedOrder);
     } catch (error) {
+      console.log(error);
       res.status(400).send({ error });
     }
   }

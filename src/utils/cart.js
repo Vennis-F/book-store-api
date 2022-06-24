@@ -60,7 +60,27 @@ const getProductId = (cart, idCartItem) => {
   throw new Error("Invalid key");
 };
 
+//Check enough cart item quantity: return [] nếu đủ, [...] nếu có lỗi
+const isValidCartItem = async (cart) => {
+  let msgNotEQuantity = [];
+
+  for (let i = 0; i < cart.items.length; i++) {
+    await cart.populate({ path: `items.${i}.product`, model: "product" });
+    const product = cart.items[i].product;
+    const qProduct = product.quantity;
+    const qNeed = cart.items[i].quantity;
+    if (qProduct < qNeed) {
+      msgNotEQuantity.push(
+        `Sách ${product.title} chỉ còn (${qProduct} sản phẩm)`
+      );
+    }
+  }
+
+  return msgNotEQuantity;
+};
+
 module.exports = {
+  isValidCartItem,
   getCartorNewCart,
   cEnoughQuantity,
   uCartItem,

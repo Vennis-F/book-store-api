@@ -1,6 +1,6 @@
-const mongoose = require("mongoose")
-const uniqueValidator = require("mongoose-unique-validator")
-const validator = require("validator")
+const mongoose = require("mongoose");
+const uniqueValidator = require("mongoose-unique-validator");
+const validator = require("validator");
 
 //SubSchema
 const orderItemSchema = mongoose.Schema({
@@ -8,7 +8,7 @@ const orderItemSchema = mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    unique: true
+    unique: true,
   },
   quantity: {
     type: Number,
@@ -31,7 +31,7 @@ const orderItemSchema = mongoose.Schema({
     type: Number,
     default: 0,
     required: true,
-    min: 0
+    min: 0,
   },
 
   //Ref
@@ -40,103 +40,104 @@ const orderItemSchema = mongoose.Schema({
     required: true,
     ref: "Product",
   }, // => productId
-})
+});
 
 //Schema
-const orderSchema = mongoose.Schema({
-
-  //Normal
-  receiverName: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  address: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  phone: {
-    type: String,
-    required: true,
-    trim: true,
-
-    validate(phone) {
-      if (!validator.isMobilePhone(phone)) {
-        throw new Error("This is not a phone number")
-      }
+const orderSchema = mongoose.Schema(
+  {
+    //Normal
+    receiverName: {
+      type: String,
+      required: true,
+      trim: true,
     },
-  },
-  email: {
-    type: String,
-    required: true,
-    trim: true,
-    lowercase: true,
-
-    validate(email) {
-      if (!validator.isEmail(email)) throw new Error("Email is invalid")
+    address: {
+      type: String,
+      required: true,
+      trim: true,
     },
+    phone: {
+      type: String,
+      required: true,
+      trim: true,
+
+      validate(phone) {
+        if (!validator.isMobilePhone(phone)) {
+          throw new Error("This is not a phone number");
+        }
+      },
+    },
+    email: {
+      type: String,
+      required: true,
+      trim: true,
+      lowercase: true,
+
+      validate(email) {
+        if (!validator.isEmail(email)) throw new Error("Email is invalid");
+      },
+    },
+    gender: {
+      type: String,
+      trim: true,
+      enum: ["M", "F", "D"],
+      required: true,
+    },
+
+    totalCost: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: 0,
+    },
+    status: {
+      type: String,
+      enum: ["success", "cancelled", "submitted"],
+      default: "submitted",
+      required: true,
+      trim: true,
+      lowercase: true,
+    },
+    items: [orderItemSchema], // => OrderItems
+
+    //Ref
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "User",
+    }, // => userId
+
+    saler: {
+      type: mongoose.Schema.Types.ObjectId,
+      // required: true,
+      ref: "User",
+    }, // => salerId
   },
-  gender: {
-    type: String,
-    trim: true,
-    enum: ["M", "F", "D"],
-    required: true
-  },
+  {
+    timestamps: true,
+  }
+);
 
-  totalCost: {
-    type: Number,
-    required: true,
-    default: 0,
-    min: 0,
-  },
-  status: {
-    type: String,
-    enum: ["success", "cancelled", "submitted"],
-    default: "submitted",
-    required: true,
-    trim: true,
-    lowercase: true,
-  },
-  items: [orderItemSchema], // => OrderItems
-
-  //Ref
-  owner: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: "User",
-  }, // => userId
-
-  saler: {
-    type: mongoose.Schema.Types.ObjectId,
-    // required: true,
-    ref: "User",
-  } // => salerId
-
-}, {
-  timestamps: true
-})
-
-orderSchema.plugin(uniqueValidator)
+orderSchema.plugin(uniqueValidator);
 
 //middleware
-orderSchema.pre('save', function (next) {
+orderSchema.pre("save", function (next) {
   try {
-    const order = this
+    const order = this;
+    order.totalCost = 0;
     order.items.forEach((item) => {
-      item.totalAmount = item.amount * item.quantity
-      order.totalCost += item.totalAmount
-    })
-
+      item.totalAmount = item.amount * item.quantity;
+      order.totalCost += item.totalAmount;
+    });
   } catch (e) {
-    console.log(e)
+    console.log(e);
   }
-  next()
-})
+  next();
+});
 
 //Model
-const Order = mongoose.model("Order", orderSchema)
-module.exports = Order
+const Order = mongoose.model("Order", orderSchema);
+module.exports = Order;
 
 // //Test
 // const order = new Order({

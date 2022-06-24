@@ -15,14 +15,20 @@ const port = process.env.PORT || 6969;
 //Config
 require("./db/mongoose");
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    credentials: true,
+    origin: "*",
+    methods: ["POST", "DELETE", "UPDATE", "PUT", "PATCH"],
+  })
+);
 
 //Session
 app.use(
   session({
     secret: "Asu",
     resave: true,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
       maxAge: 180000,
       secure: false,
