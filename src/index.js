@@ -30,7 +30,7 @@ app.use(
     resave: true,
     saveUninitialized: false,
     cookie: {
-      maxAge: 180000,
+      maxAge: 18000000000,
       secure: false,
     },
     store: MongoStore.create({
@@ -61,7 +61,17 @@ const {
   createDataCrawl,
   saveDataCrawl,
 } = require("./utils/crawl-data/dataProduct");
+const Product = require("./models/product");
 
+// Product.findOneAndUpdate(
+//   { _id: "62b1e79c671781b4fe64e11b" },
+//   {
+//     salePrice: -1,
+//   },
+//   { new: true, runValidators: true }
+// )
+//   .then((result) => console.log(result))
+//   .catch((err) => console.log(err));
 // saveCateCrawl();
 // createDataCrawl();
 // saveDataCrawl();

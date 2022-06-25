@@ -1,4 +1,4 @@
-const auth = require("../middlewares/auth");
+const { auth } = require("../middlewares/auth");
 const authorize = require("../middlewares/authorize");
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
@@ -6,6 +6,31 @@ const { resetPassword } = require("../emails/account");
 const Role = require("../models/role");
 const { isValidUpdate } = require("../utils/valid");
 const router = require("express").Router();
+const mongoose = require("mongoose");
+const ObjectId = mongoose.Types.ObjectId;
+
+//GUEST
+//POST /user/guest
+router.post("/guest", async (req, res) => {
+  const role = await Role.findOne({ name: "guest" });
+  const userId = new ObjectId();
+  req.session.guest = { _id: userId, role };
+  req.session.cartGuest = {
+    _id: new ObjectId(),
+    totalCost: 0,
+    items: [],
+    user: userId,
+  };
+
+  try {
+    res
+      .status(201)
+      .send({ guest: req.session.guest, cartGuest: req.session.cartGuest });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({ error: error.message });
+  }
+});
 
 //POST /user/register
 router.post("/register", async (req, res) => {
@@ -18,8 +43,9 @@ router.post("/register", async (req, res) => {
   try {
     const token = await user.generateAuthToken();
     res.status(201).send({ user, token });
-  } catch (e) {
-    res.status(400).send(e);
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({ error: error.message });
   }
 });
 
@@ -33,8 +59,10 @@ router.post("/login", async (req, res) => {
     const token = await user.generateAuthToken();
 
     res.send({ user, token });
-  } catch (e) {
-    res.status(400).send(e.message);
+  } catch (error) {
+    // console.log(error);
+    console.log(error.message);
+    res.status(400).send({ error: error.message });
   }
 });
 
@@ -67,14 +95,10 @@ router.post("/logoutAll", auth, async (req, res) => {
 });
 
 //GET /user/profile
-router.get(
-  "/profile",
-  auth,
-  authorize("customer", "marketing", "sale", "saleManager", "admin"),
-  async (req, res) => {
-    res.send({ user: req.user, role: req.role });
-  }
-);
+//"customer", "marketing", "sale", "saleManager", "admin"
+router.get("/profile", auth, authorize("customer"), async (req, res) => {
+  res.send({ user: req.user, role: req.role });
+});
 
 //GET /user (get all users)
 router.get("/", auth, async (req, res) => {
@@ -100,41 +124,45 @@ router.patch("/profile", auth, async (req, res) => {
     updates.forEach((update) => (req.user[update] = req.body[update]));
     await req.user.save({ validateModifiedOnly: true });
 
+    console.log(req.user);
     res.send(req.user);
   } catch (error) {
+    console.log(error);
     res.status(400).send({ error: error.message });
   }
 });
 
 //PATCH  /user/password (check empty bằng frontend)
-router.patch("/password", auth, async (req, res) => {
+router.patch("/new-password", auth, async (req, res) => {
   try {
-    const { confirm, currPassword, newPassword } = req.body;
+    const { currPassword, newPassword, confirm } = req.body;
 
     //Check current password
     const checkPwd = await bcrypt.compare(currPassword, req.user.password);
     if (!checkPwd)
-      return res.status(400).send({ error: "Password is incorrect" });
+      return res.status(400).send({ error: "Mật khẩu cũ không đúng" });
 
     //Check newPassword === confirm
     if (newPassword !== confirm)
       return res
         .status(400)
-        .send({ error: "New password not same as confirm" });
+        .send({ error: "Mật khẩu mới không giống mật khẩu cũ" });
 
     //Compare password to old password
     const isMatch = await bcrypt.compare(newPassword, req.user.password);
     if (isMatch)
       return res
         .status(400)
-        .send({ error: "New password is same old password" });
+        .send({ error: "Mật khẩu mới giống với mật khẩu cũ" });
 
     //Change new password
     req.user.password = newPassword;
     await req.user.save();
     res.send(req.user);
-  } catch (e) {
-    res.status(500).send(e);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).send({ error: error.message });
+    res.status(500).send({ error });
   }
 });
 

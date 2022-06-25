@@ -99,6 +99,10 @@ const orderSchema = mongoose.Schema(
       lowercase: true,
     },
     items: [orderItemSchema], // => OrderItems
+    note: {
+      type: String,
+      trim: true,
+    },
 
     //Ref
     owner: {

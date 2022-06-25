@@ -1,4 +1,4 @@
-const auth = require("../middlewares/auth");
+const { auth } = require("../middlewares/auth");
 const authorize = require("../middlewares/authorize");
 const Product = require("../models/product");
 const router = require("express").Router();
