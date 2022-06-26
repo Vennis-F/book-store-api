@@ -5,7 +5,7 @@ const router = require("express").Router();
 const { isValidUpdate, updatesFilter } = require("../utils/valid");
 
 //POST /products
-router.post("/", auth, authorize("marketing"), async (req, res) => {
+router.post("/", async (req, res) => {
   const product = new Product({ ...req.body });
   try {
     const productSaved = await product.save();
@@ -31,7 +31,7 @@ router.get("/", async (req, res) => {
     match.feartured = feartured === "true";
   }
   //Product status
-  if (feartured) {
+  if (status) {
     match.status = status === "true";
   }
 
@@ -54,23 +54,29 @@ router.get("/", async (req, res) => {
 //GET /products/category/
 router.get("/category/:categoryId", async (req, res) => {
   const cateId = req.params.categoryId;
-  const { limit, page, sortBy, publicDate } = req.query;
+  const { limit, page, sortBy, publicDate, status } = req.query;
   const match = { category: cateId };
   const sort = { "briefInformation.publicDate": -1 };
   const options = {
     limit: 12,
     skip: 0,
-    sort,
+    // sort,
   };
+
+  //Product status
+  if (status) {
+    match.status = status === "true";
+  }
 
   //Paging
   if (limit) options.limit = parseInt(limit);
-  if (page) options.skip = parseInt(limit) * (parseInt(skip) - 1);
+  if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
   if (publicDate) {
     sort["briefInformation.publicDate"] = publicDate === "desc" ? -1 : 1;
   }
-  console.log(match);
 
+  console.log(match);
+  console.log(options);
   try {
     //Find and Check product exist:
     const product = await Product.find(match, null, options);
@@ -79,6 +85,23 @@ router.get("/category/:categoryId", async (req, res) => {
     if (e.name === "CastError" && e.kind === "ObjectId")
       return res.status(400).send({ error: "Invalid ID" });
     res.status(500).send(e);
+  }
+});
+
+//GET /products/size
+router.get("/size", async (req, res) => {
+  const { limit, page, sortBy, publicDate, status, category } = req.query;
+
+  const match = {};
+  if (category) match.category = category;
+  if (status) match.status = status === "true";
+
+  try {
+    const count = await Product.count(match);
+    res.status(200).send({ count });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ error });
   }
 });
 
@@ -127,7 +150,7 @@ router.patch("/:id", auth, authorize("marketing"), async (req, res) => {
     "salePrice",
     "quantity",
     "description",
-    "feature",
+    "feartured",
     "status",
     "author",
     "publisher",
@@ -135,6 +158,7 @@ router.patch("/:id", auth, authorize("marketing"), async (req, res) => {
     "language",
     "pages",
     "category",
+    "thumbnail",
   ];
   if (!isValidUpdate(updates, allowUpdateds))
     return res.status(400).send({ error: "Invalid updates" });

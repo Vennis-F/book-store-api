@@ -45,7 +45,6 @@ router.post("/guest", async (req, res) => {
     let msgNotEQuantity = await isValidCartItemGuest(cart);
 
     //If not response 400
-    console.log(msgNotEQuantity);
     if (msgNotEQuantity.length > 0)
       return res.status(400).send({ error: msgNotEQuantity });
 
@@ -152,60 +151,55 @@ router.post("/receive-inforamation", async (req, res) => {
 
 //BUTTON XÁC NHẬN THANH TOÁN, nhận DATA từ session
 //POST /checkout/confirm (not check cart or session)
-router.post(
-  "/confirm",
-  auth,
-  authorize("guest", "customer"),
-  async (req, res) => {
-    try {
-      //Check receiverInfor data exist
-      if (!req.session.receiverInfo)
-        return res
-          .status(400)
-          .send({ error: "Session receiverInfor data not exist" });
+router.post("/confirm", auth, authorize("customer"), async (req, res) => {
+  try {
+    //Check receiverInfor data exist
+    if (!req.session.receiverInfo)
+      return res
+        .status(400)
+        .send({ error: "Session receiverInfor data not exist" });
 
-      //Check cart exist and cart.items length !== 0
-      const cart = await Cart.findOne({ user: req.user._id });
-      if (!cart || cart.items.length === 0)
-        return res
-          .status(400)
-          .send({ error: "Cart is not exist or Cart items length 0" });
+    //Check cart exist and cart.items length !== 0
+    const cart = await Cart.findOne({ user: req.user._id });
+    if (!cart || cart.items.length === 0)
+      return res
+        .status(400)
+        .send({ error: "Cart is not exist or Cart items length 0" });
 
-      //Check lại vì trong lúc mình đặt hàng có thể đã hết hàng
-      let msgNotEQuantity = await isValidCartItem(cart);
-      if (msgNotEQuantity.length > 0)
-        return res.status(400).send({ error: msgNotEQuantity });
+    //Check lại vì trong lúc mình đặt hàng có thể đã hết hàng
+    let msgNotEQuantity = await isValidCartItem(cart);
+    if (msgNotEQuantity.length > 0)
+      return res.status(400).send({ error: msgNotEQuantity });
 
-      //Create overiew order
-      const {
-        address,
-        fullName: receiverName,
-        phone,
-        email,
-        gender,
-        note,
-      } = req.session.receiverInfo;
-      console.log(note);
-      const order = new Order({
-        owner: req.user._id,
-        totalCost: cart.totalCost,
-        items: cart.items,
-        address,
-        receiverName,
-        phone,
-        email,
-        gender,
-        note,
-      });
+    //Create overiew order
+    const {
+      address,
+      fullName: receiverName,
+      phone,
+      email,
+      gender,
+      note,
+    } = req.session.receiverInfo;
+    console.log(note);
+    const order = new Order({
+      owner: req.user._id,
+      totalCost: cart.totalCost,
+      items: cart.items,
+      address,
+      receiverName,
+      phone,
+      email,
+      gender,
+      note,
+    });
 
-      const savedOrder = await order.save();
-      res.status(201).send(savedOrder);
-    } catch (error) {
-      console.log(error);
-      res.status(400).send({ error });
-    }
+    const savedOrder = await order.save();
+    res.status(201).send(savedOrder);
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({ error });
   }
-);
+});
 
 //POST /checkout/confirm (not check cart or session)
 router.post("/confirm/guest", async (req, res) => {
@@ -264,7 +258,7 @@ router.post("/confirm/guest", async (req, res) => {
     console.log(req.session.cartGuest);
     console.log("++++++++++++++++++++++");
 
-    await req.session.save();
+    req.session.save();
     const savedOrder = await order.save();
     res.status(201).send(savedOrder);
   } catch (error) {
@@ -333,7 +327,7 @@ router.patch("/confirm/guest", async (req, res) => {
 
     //Empty cart
     req.session.cartGuest.items = [];
-    req.session.cartGuest.totalAmount = 0;
+    req.session.cartGuest.totalCost = 0;
     req.session.receiverInfo = "";
 
     req.session.save();

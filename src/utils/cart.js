@@ -148,21 +148,15 @@ const cartPopulateCartItem = async (cart) => {
 //object id, string, object
 const updateNewProductCartItem = async (cart) => {
   for (let i = 0; i < cart.items.length; i++) {
-    // console.log("??????");
-    // console.log(cart.items[i].product);
-    // console.log("??????");
+    let product = {};
     if (typeof cart.items[i].product !== "string") {
-      console.log("hihihihi");
-      const product = cart.items[i].product;
-      console.log(product);
-      cart.items[i].product = await Product.findById(product);
+      product = cart.items[i].product;
     } else {
-      console.log("lalala");
-      let product = cart.items[i].product._id;
+      product = cart.items[i].product._id;
       if (!product) product = cart.items[i].product.toString();
-      console.log(product);
-      cart.items[i].product = await Product.findById(product);
     }
+    cart.items[i].product = await Product.findById(product);
+    cart.items[i].amount = cart.items[i].product.salePrice;
   }
 };
 

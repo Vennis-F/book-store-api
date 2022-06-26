@@ -196,8 +196,8 @@ router.post("/guest", async (req, res) => {
     }
 
     //Fetch product information to product and id:
-    completeCart(cart);
     await updateNewProductCartItem(cart);
+    completeCart(cart);
 
     //Saved cart
     req.session.cartGuest = cart;
@@ -228,6 +228,7 @@ router.patch("/", auth, authorize("customer"), async (req, res) => {
     cart.items.forEach((item) => {
       if (item._id.toString() === cartItemId) {
         item.quantity = cEnoughQuantity(product.quantity, quantityNeed);
+        item.amount = product.salePrice;
       }
     });
 
@@ -259,9 +260,10 @@ router.patch("/guest", async (req, res) => {
     });
 
     //Saved cart
+    await updateNewProductCartItem(cart);
     completeCart(cart);
     req.session.cartGuest = cart;
-    await req.session.save();
+    req.session.save();
     console.log(req.session.cartGuest);
     res.status(200).send(req.session.cartGuest);
   } catch (e) {
@@ -371,7 +373,7 @@ router.delete("/guest/:key", async (req, res) => {
 
     //Saved cart
     req.session.cartGuest = cart;
-    await req.session.save();
+    req.session.save();
     res.status(200).send(req.session.cartGuest);
   } catch (error) {
     res.status(500).send({ error: error.message });
