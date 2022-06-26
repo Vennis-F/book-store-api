@@ -15,9 +15,9 @@ router.post("/", auth, authorize("marketing"), async (req, res) => {
   }
 });
 
-//GET /products
+//GET /products?featured=true
 router.get("/", async (req, res) => {
-  const { fearture, limit, page, sortBy, publicDate } = req.query;
+  const { feartured, limit, page, sortBy, publicDate, status } = req.query;
   const match = {};
   const sort = { "briefInformation.publicDate": -1 };
   const options = {
@@ -27,22 +27,27 @@ router.get("/", async (req, res) => {
   };
 
   //Product fearture
-  if (fearture) {
-    match.fearture = fearture === "true";
+  if (feartured) {
+    match.feartured = feartured === "true";
+  }
+  //Product status
+  if (feartured) {
+    match.status = status === "true";
   }
 
   //Paging
   if (limit) options.limit = parseInt(limit);
-  if (page) options.skip = parseInt(limit) * (parseInt(skip) - 1);
+  if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
   if (publicDate) {
     sort["briefInformation.publicDate"] = publicDate === "desc" ? -1 : 1;
   }
 
   try {
+    console.log(match, options);
     const products = await Product.find(match, null, options);
     res.send(products);
   } catch (e) {
-    res.statu(500).send();
+    res.status(500).send();
   }
 });
 
@@ -113,6 +118,7 @@ router.get("/:id", async (req, res) => {
 // });
 
 //PATCH /categories/:id (ALL field)
+
 router.patch("/:id", auth, authorize("marketing"), async (req, res) => {
   let updates = updatesFilter(req.body);
   const allowUpdateds = [
