@@ -9,6 +9,8 @@ const {
   cartPopulateCartItem,
   updateNewProductCartItem,
   isValidCartItemGuest,
+  completeCart,
+  updateNewProductCartItemCustomer,
 } = require("../utils/cart");
 const Product = require("../models/product");
 
@@ -21,11 +23,12 @@ router.post("/", auth, authorize("customer"), async (req, res) => {
     let msgNotEQuantity = await isValidCartItem(cart);
 
     //If not response 400
-    console.log(msgNotEQuantity);
     if (msgNotEQuantity.length > 0)
       return res.status(400).send({ error: msgNotEQuantity });
 
     //Send status 200
+    await updateNewProductCartItemCustomer(cart);
+    await cart.save();
     res.send();
   } catch (error) {
     console.log(error);
@@ -42,6 +45,7 @@ router.post("/guest", async (req, res) => {
 
     //Update lại product cart
     await updateNewProductCartItem(cart);
+    completeCart(cart);
     let msgNotEQuantity = await isValidCartItemGuest(cart);
 
     //If not response 400

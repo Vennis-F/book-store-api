@@ -160,7 +160,16 @@ const updateNewProductCartItem = async (cart) => {
   }
 };
 
+//Update cart customer: update lại giá
+const updateNewProductCartItemCustomer = async (cart) => {
+  cart = await cartPopulateCartItem(cart);
+  cart.items.forEach((item) => {
+    item.amount = item.product.salePrice;
+  });
+};
+
 module.exports = {
+  updateNewProductCartItemCustomer,
   isValidCartItem,
   updateNewProductCartItem,
   addCartItemGuest,

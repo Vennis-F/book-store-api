@@ -8,6 +8,7 @@ const {
   lstOrderPopulateOrderItem,
   orderPopulateOrderItem,
 } = require("../utils/order");
+const Product = require("../models/product");
 const router = require("express").Router();
 
 const getRoleCode = async (name) => {
@@ -44,6 +45,46 @@ router.get("/me/:id", auth, authorize("customer"), async (req, res) => {
     if (e.name === "CastError" && e.kind === "ObjectId")
       return res.status(400).send({ error: "Invalid ID" });
     res.status(500).send(e);
+  }
+});
+
+//PATCH /orders/me/:id
+// router.patch("/");
+
+//DELETE /orders/me/:id
+//DELETE /cart/empty
+router.delete("/order/:id", auth, authorize("customer"), async (req, res) => {
+  try {
+    let order = await Order.find({ owner: req.user._id });
+
+    //Không tìm thấy order
+    if (!order) return res.status(404).send({ error: "Order not found!" });
+
+    //Check submitted order
+    if (order.status !== "submitted")
+      return res
+        .status(400)
+        .send({ error: "Không thể cancel vì order không ở status submitted" });
+
+    //Trả lại quantity cho products
+    orderPopulateOrderItem(order);
+    for (let i = 0; i < order.items.length; i++) {
+      const productId = order.items[i].product._id;
+      const quantity = order.items[i].quantity;
+      const productDBQuantity = order.items[i].product.quantity;
+
+      //Update...
+      await Product.findByIdAndUpdate(productId, {
+        quantity: quantity + productDBQuantity,
+      });
+    }
+
+    //Change status to cancel
+    order.status = "cancelled";
+    await order.save();
+    res.status(200).send(order);
+  } catch (error) {
+    res.status(500).send({ error });
   }
 });
 

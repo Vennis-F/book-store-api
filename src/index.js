@@ -9,6 +9,7 @@ const cartRouter = require("./routers/cart");
 const rolesRouter = require("./routers/role");
 const checkoutRouter = require("./routers/checkout");
 const ordersRouter = require("./routers/orders");
+const sessionRouter = require("./routers/session");
 const app = express();
 const port = process.env.PORT || 6969;
 
@@ -49,6 +50,7 @@ app.use("/roles", rolesRouter);
 app.use("/cart", cartRouter);
 app.use("/checkout", checkoutRouter);
 app.use("/orders", ordersRouter);
+app.use("/session", sessionRouter);
 
 require("./models/slider");
 

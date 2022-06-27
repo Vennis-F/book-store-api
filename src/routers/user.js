@@ -41,6 +41,10 @@ router.post("/register", async (req, res) => {
   });
 
   try {
+    // //Delete session
+    // req.session.destroy();
+
+    //Create user
     const token = await user.generateAuthToken();
     res.status(201).send({ user, token });
   } catch (error) {
@@ -52,6 +56,10 @@ router.post("/register", async (req, res) => {
 //POST /user/login
 router.post("/login", async (req, res) => {
   try {
+    // //Delete session
+    // req.session.destroy();
+
+    //Login
     const user = await User.findByCredentials(
       req.body.email,
       req.body.password
@@ -69,11 +77,14 @@ router.post("/login", async (req, res) => {
 //POST /user/logout
 router.post("/logout", auth, async (req, res) => {
   try {
+    //Delete token
     req.user.tokens = req.user.tokens.filter(
       (token) => token.token !== req.token
     );
     await req.user.save({ validateModifiedOnly: true });
 
+    //Delete session
+    req.session.destroy();
     res.send();
   } catch (e) {
     console.log(e);
@@ -87,6 +98,8 @@ router.post("/logoutAll", auth, async (req, res) => {
     req.user.tokens = [];
     await req.user.save({ validateModifiedOnly: true });
 
+    //Delete session
+    req.session.destroy();
     res.send();
   } catch (e) {
     console.log(e);

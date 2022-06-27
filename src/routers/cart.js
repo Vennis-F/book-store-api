@@ -16,15 +16,16 @@ const {
   uCartItemGuest,
   addCartItemGuest,
   updateNewProductCartItem,
+  updateNewProductCartItemCustomer,
 } = require("../utils/cart");
 
+/*FLOW quantity:
 //!!!!!!!!!!!
 // CREATE CART: POST /cart, get /cart
 // CHECK CART EMPTY: left
 // POST /cart: check vụ database có enough không thì để frontend check, không check quantityNeed = 0
 // Trong cart, mà item lỡ có sài update price hay title thì handle như thế nào.
 // product muốn status true: thì phải set nó thành true
-/*FLOW quantity:
 - đối với cart thì check quantity
 - đối với order thì cũng check lại lần nữa(vì trong quá trình ở cart 
 có thể user khác đã cướp mất vc) VÀ trừ quantity nữa
@@ -37,14 +38,13 @@ FLOW totalAmount:
     // // const totalAmount2 = cart.items.reduce(
     // //   (total, { quantity, amount }) => total + quantity * amount
     // // )
-*/
-//---------------
-
 //Khi status === false thì ko cho đặt nữa (không thông báo)
 //Không đủ số lượng: cũng không cho đặt (không thông báo)
 //Nếu product nào đã deactive thì không thể thêm lại được
 //POST /cart/rebuy (Add items from order to cart)
+    */
 
+//POST /cart/rebuy
 router.post("/rebuy", auth, authorize("customer"), async (req, res) => {
   const jsonData = [
     {
@@ -157,6 +157,8 @@ router.post("/", auth, authorize("customer"), async (req, res) => {
 //POST /cart (Add item to cart - not check cart item duplicated)
 router.post("/guest", async (req, res) => {
   let cart = req.session.cartGuest;
+  console.log(cart);
+  console.log(req.session, "--------");
 
   // console.log(cart);
   try {
@@ -228,14 +230,16 @@ router.patch("/", auth, authorize("customer"), async (req, res) => {
     cart.items.forEach((item) => {
       if (item._id.toString() === cartItemId) {
         item.quantity = cEnoughQuantity(product.quantity, quantityNeed);
-        item.amount = product.salePrice;
       }
     });
 
     //Saved cart
+    await updateNewProductCartItemCustomer(cart);
+    console.log(cart);
     const cartSaved = await cart.save();
     res.status(200).send(cartSaved);
   } catch (e) {
+    console.log(e);
     res.status(400).send({ error: e.message });
   }
 });
@@ -278,13 +282,8 @@ router.get("/", auth, authorize("customer"), async (req, res) => {
     let cart = await getCartorNewCart(req.user._id);
 
     //Populate product
-    if (cart) {
-      for (let i = 0; i < cart.items.length; i++) {
-        await cart.populate({ path: `items.${i}.product`, model: "product" });
-      }
-    }
-
-    // if (cart.items.length === 0) throw new Error("Cart is empty")
+    await updateNewProductCartItemCustomer(cart);
+    await cart.save();
     res.status(200).send(cart);
   } catch (e) {
     console.log(e.message);
@@ -298,7 +297,7 @@ router.get("/guest", async (req, res) => {
     //Mỗi lần guest thì nên update lại product nhé để có số lượng quantity mới nhất
     let cart = req.session.cartGuest;
     await updateNewProductCartItem(cart);
-    console.log(cart);
+    completeCart(cart);
     req.session.cartGuest = cart;
     req.session.save();
     res.status(200).send(req.session.cartGuest);
@@ -342,6 +341,7 @@ router.delete("/:key", auth, authorize("customer"), async (req, res) => {
       return res.status(400).send({ error: "Cart item id not found" });
 
     //Saved cart
+    await updateNewProductCartItemCustomer(cart);
     const cartSaved = await cart.save({ validateModifiedOnly: true });
     console.log(cartSaved);
     res.status(200).send(cartSaved);
@@ -372,6 +372,8 @@ router.delete("/guest/:key", async (req, res) => {
       return res.status(400).send({ error: "Cart item id not found" });
 
     //Saved cart
+    await updateNewProductCartItem(cart);
+    completeCart(cart);
     req.session.cartGuest = cart;
     req.session.save();
     res.status(200).send(req.session.cartGuest);
