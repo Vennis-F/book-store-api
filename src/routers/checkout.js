@@ -1,39 +1,64 @@
-const auth = require("../middlewares/auth")
-const authorize = require("../middlewares/authorize")
-const Cart = require("../models/cart")
-const router = require("express").Router()
-const validator = require("validator")
-const Order = require("../models/order")
+const { auth } = require("../middlewares/auth");
+const authorize = require("../middlewares/authorize");
+const Cart = require("../models/cart");
+const router = require("express").Router();
+const validator = require("validator");
+const Order = require("../models/order");
+const {
+  isValidCartItem,
+  cartPopulateCartItem,
+  updateNewProductCartItem,
+  isValidCartItemGuest,
+  completeCart,
+  updateNewProductCartItemCustomer,
+} = require("../utils/cart");
+const Product = require("../models/product");
 
 //POST /checkout (not check exist cart or cart empty)
-router.post("/", auth, authorize("guest", "customer"), async (req, res) => {
+router.post("/", auth, authorize("customer"), async (req, res) => {
   try {
     //Check all cart item is valid
     //Check lại vì trong lúc mình đặt hàng có thể đã hết hàng
-    const cart = await Cart.findOne({ owner: req.user._id })
-    let isValidCartItem = true
-
-    for (let i = 0; i < cart.items.length; i++) {
-      await cart.populate(`items.${i}.productInfo`)
-      // console.log(cart)
-      const qProduct = cart.items[i].productInfo.quantity
-      const qNeed = cart.items[i].quantity
-      if (qProduct < qNeed) isValidCartItem = false
-    }
+    const cart = await Cart.findOne({ user: req.user._id });
+    let msgNotEQuantity = await isValidCartItem(cart);
 
     //If not response 400
-    if (!isValidCartItem)
-      return res
-        .status(400)
-        .send({ error: "Quantity of product is not enough" })
+    if (msgNotEQuantity.length > 0)
+      return res.status(400).send({ error: msgNotEQuantity });
 
     //Send status 200
-    res.send()
+    await updateNewProductCartItemCustomer(cart);
+    await cart.save();
+    res.send();
   } catch (error) {
-    console.log(error)
-    res.status(500).send({ error })
+    console.log(error);
+    res.status(500).send({ error });
   }
-})
+});
+
+//POST /checkout (not check exist cart or cart empty)
+router.post("/guest", async (req, res) => {
+  try {
+    //Check all cart item is valid
+    //Check lại vì trong lúc mình đặt hàng có thể đã hết hàng
+    let cart = req.session.cartGuest;
+
+    //Update lại product cart
+    await updateNewProductCartItem(cart);
+    completeCart(cart);
+    let msgNotEQuantity = await isValidCartItemGuest(cart);
+
+    //If not response 400
+    if (msgNotEQuantity.length > 0)
+      return res.status(400).send({ error: msgNotEQuantity });
+
+    //Send status 200
+    res.send();
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ error });
+  }
+});
 
 /*FLOW PROGRAM
   CHƯA TỪNG CÓ ORDER
@@ -53,126 +78,268 @@ router.post("/", auth, authorize("guest", "customer"), async (req, res) => {
 */
 
 //GET /checkout/receive-information
-router.get("/", auth, authorize("guest", "customer"), async (req, res) => {
-  try {
-    const orders = await Order.find({ owner: req.user._id }).sort({
-      createdAt: -1,
-    })
-    const receiverInfo = req.session.receiverInfo
+router.get(
+  "/receive-information",
+  auth,
+  authorize("customer"),
+  async (req, res) => {
+    try {
+      //Nếu có session
+      if (req.session.receiverInfo) return res.send(req.session.receiverInfo);
 
-    //Nếu không có order lẫn session: return 404 and thì tạo mới
-    if (orders.length === 0 && !receiverInfo) {
-      return res.status(404).send(undefined)
+      //Nếu là user, nhưng không có session: return data and setSession cho nó
+      const { fullName, email, gender, phone, address } = req.user;
+      const receiverInfo = { fullName, email, gender, phone, address };
+      req.session.receiverInfo = receiverInfo;
+
+      res.send(receiverInfo);
+    } catch (error) {
+      res.status(500).send({ error: error.message });
     }
-
-    //Nếu có session
-    if (receiverInfo) return res.send(receiverInfo)
-
-    //Nếu có order, nhưng không có session: return data and setSession cho nó
-    const { address, receiverName, phone } = orders[0]
-    req.session.receiverInfo = { address, receiverName, phone }
-    res.send(req.session.receiverInfo)
-  } catch (error) {
-    res.status(500).send({ error: error.message })
   }
-})
+);
+
+//GET /checkout/receive-information
+router.get("/receive-information/guest", async (req, res) => {
+  try {
+    //Nếu có session
+    if (req.session.receiverInfo) return res.send(req.session.receiverInfo);
+    res.send({});
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ error: error.message });
+  }
+});
 
 //LƯU ĐỊA CHỈ: invalid return 400 or 500, valid return info và lưu vào session
 //POST /checkout/receive-information (case all field are full)
-router.post(
-  "/receive-inforamation",
-  auth,
-  authorize("guest", "customer"),
-  async (req, res) => {
-    const { address, phone, receiverName } = req.body
+router.post("/receive-inforamation", async (req, res) => {
+  const { fullName, email, gender, phone, address, note } = req.body;
 
-    try {
-      //Check exist
-      if (!address || !phone || !receiverName) return res.sendStatus(400)
+  try {
+    //Check exist
+    if (!address || !phone || !fullName || !gender || !email)
+      return res.sendStatus(400);
 
-      //Check empty string
-      if (!address.trim() || !phone.trim() || !receiverName.trim())
-        return res.sendStatus(400)
+    //Check empty string
+    if (
+      !address.trim() ||
+      !phone.trim() ||
+      !fullName.trim() ||
+      !phone.trim() ||
+      !email.trim()
+    )
+      return res.sendStatus(400);
 
-      //Check valid phoneNumber:
-      if (!validator.isMobilePhone(phone.trim()))
-        return res.status(400).send({ error: "Not valid phone number" })
+    //Check valid phoneNumber:
+    if (!validator.isMobilePhone(phone.trim()))
+      return res.status(400).send({ error: "Số điện thoại không hợp lệ" });
 
-      //Set receive information to session
-      const receiverInfo = {
-        address: address.trim(),
-        phone,
-        receiverName: receiverName.trim(),
-      }
-      req.session.receiverInfo = receiverInfo
+    //Set receive information to session
+    const receiverInfo = {
+      fullName: fullName.trim(),
+      email: email.trim(),
+      gender: gender.trim(),
+      phone: phone.trim(),
+      address: address.trim(),
+      note: note?.trim(),
+    };
+    req.session.receiverInfo = receiverInfo;
 
-      res.send(receiverInfo)
-    } catch (error) {
-      res.statu(500).send({ error })
-    }
+    res.send(receiverInfo);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ error });
   }
-)
+});
 
 //BUTTON XÁC NHẬN THANH TOÁN, nhận DATA từ session
 //POST /checkout/confirm (not check cart or session)
-router.post(
-  "/confirm",
-  auth,
-  authorize("guest", "customer"),
-  async (req, res) => {
-    try {
-      //Check receiverInfor data exist
-      if (!req.session.receiverInfo)
-        return res
-          .status(400)
-          .send({ error: "Session receiverInfor data not exist" })
+router.post("/confirm", auth, authorize("customer"), async (req, res) => {
+  try {
+    //Check receiverInfor data exist
+    if (!req.session.receiverInfo)
+      return res
+        .status(400)
+        .send({ error: "Session receiverInfor data not exist" });
 
-      //Check cart exist and cart.items length !== 0
-      const cart = await Cart.findOne({ owner: req.user._id })
-      if (!cart || cart.items.length === 0)
-        return res
-          .status(400)
-          .send({ error: "Cart is not exist or Cart items length 0" })
+    //Check cart exist and cart.items length !== 0
+    const cart = await Cart.findOne({ user: req.user._id });
+    if (!cart || cart.items.length === 0)
+      return res
+        .status(400)
+        .send({ error: "Cart is not exist or Cart items length 0" });
 
-      //Create overiew order
-      const { address, receiverName, phone } = req.session.receiverInfo
-      const order = new Order({
-        owner: req.user._id,
-        address,
-        receiverName,
-        phone,
-        totalAmount: cart.totalAmount,
-        items: cart.items,
-      })
-      const savedOrder = await order.save()
-      res.status(201).send(savedOrder)
-    } catch (error) {
-      res.status(400).send({ error })
-    }
+    //Check lại vì trong lúc mình đặt hàng có thể đã hết hàng
+    let msgNotEQuantity = await isValidCartItem(cart);
+    if (msgNotEQuantity.length > 0)
+      return res.status(400).send({ error: msgNotEQuantity });
+
+    //Create overiew order
+    const {
+      address,
+      fullName: receiverName,
+      phone,
+      email,
+      gender,
+      note,
+    } = req.session.receiverInfo;
+    console.log(note);
+    const order = new Order({
+      owner: req.user._id,
+      totalCost: cart.totalCost,
+      items: cart.items,
+      address,
+      receiverName,
+      phone,
+      email,
+      gender,
+      note,
+    });
+
+    const savedOrder = await order.save();
+    res.status(201).send(savedOrder);
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({ error });
   }
-)
+});
 
 //POST /checkout/confirm (not check cart or session)
-router.patch(
-  "/confirm",
-  auth,
-  authorize("guest", "customer"),
-  async (req, res) => {
-    try {
-      //Empty cart
-      await Cart.findOneAndUpdate(
-        { owner: req.user._id },
-        { items: [], totalAmount: 0 }
-      )
+router.post("/confirm/guest", async (req, res) => {
+  try {
+    //Check receiverInfor data exist
+    if (!req.session.receiverInfo)
+      return res
+        .status(400)
+        .send({ error: "Session receiverInfor data not exist" });
 
-      //Empty receiverInfor data
-      req.session.receiverInfo = ""
+    //Check cart exist and cart.items length !== 0
+    let cart = req.session.cartGuest;
+    await updateNewProductCartItem(cart);
 
-      res.send()
-    } catch (error) {
-      res.status(400).send({ error })
-    }
+    if (!cart || cart.items.length === 0)
+      return res
+        .status(400)
+        .send({ error: "Cart is not exist or Cart items length 0" });
+
+    //Check lại vì trong lúc mình đặt hàng có thể đã hết hàng
+    let msgNotEQuantity = await isValidCartItemGuest(cart);
+    if (msgNotEQuantity.length > 0)
+      return res.status(400).send({ error: msgNotEQuantity });
+
+    //Change product obj to productId:
+    cart.items.forEach((item) => {
+      item.product = item.product._id.toString();
+    });
+
+    //Create overiew order
+    const {
+      address,
+      fullName: receiverName,
+      phone,
+      email,
+      gender,
+      note,
+    } = req.session.receiverInfo;
+
+    const order = new Order({
+      owner: cart.user,
+      totalCost: cart.totalCost,
+      items: cart.items,
+      address,
+      receiverName,
+      phone,
+      email,
+      gender,
+      note,
+    });
+
+    console.log(order);
+
+    console.log("++++++++++++++++++++++Test");
+    await updateNewProductCartItem(cart);
+    console.log(req.session.cartGuest);
+    console.log("++++++++++++++++++++++");
+
+    req.session.save();
+    const savedOrder = await order.save();
+    res.status(201).send(savedOrder);
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({ error });
   }
-)
+});
 
-module.exports = router
+//POST /checkout/confirm (not check cart or session)
+router.patch("/confirm", auth, authorize("customer"), async (req, res) => {
+  try {
+    //Decrease product quantity:
+    const cart = await cartPopulateCartItem(
+      await Cart.findOne({ user: req.user._id })
+    );
+
+    for (let i = 0; i < cart.items.length; i++) {
+      const item = cart.items[i];
+      const product = cart.items[i].product;
+      await Product.findByIdAndUpdate(
+        product._id,
+        {
+          quantity: product.quantity - item.quantity,
+        },
+        { new: true, runValidators: true }
+      );
+    }
+
+    //Empty cart
+    cart.items = [];
+    cart.totalAmount = 0;
+    cart.save({ validateModifiedOnly: true });
+
+    //Empty receiverInfor data
+    req.session.receiverInfo = "";
+
+    res.send();
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({ error });
+  }
+});
+
+//POST /checkout/confirm (not check cart or session)
+router.patch("/confirm/guest", async (req, res) => {
+  try {
+    //Decrease product quantity:
+    let cart = req.session.cartGuest;
+    await updateNewProductCartItem(cart);
+    console.log("------------------");
+    console.log(cart);
+    console.log("------------------");
+
+    for (let i = 0; i < cart.items.length; i++) {
+      const item = cart.items[i];
+      const product = cart.items[i].product;
+
+      await Product.findByIdAndUpdate(
+        product._id,
+        {
+          quantity: product.quantity - item.quantity,
+        },
+        { new: true, runValidators: true }
+      );
+    }
+
+    //Empty cart
+    req.session.cartGuest.items = [];
+    req.session.cartGuest.totalCost = 0;
+    req.session.receiverInfo = "";
+
+    req.session.save();
+    res.send();
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({ error });
+  }
+});
+
+module.exports = router;

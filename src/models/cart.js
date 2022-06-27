@@ -1,6 +1,7 @@
-const mongoose = require("mongoose")
-const uniqueValidator = require("mongoose-unique-validator")
-const validator = require("validator")
+const mongoose = require("mongoose");
+const uniqueValidator = require("mongoose-unique-validator");
+const validator = require("validator");
+require("./product");
 
 //SubSchema
 const cartItemSchema = mongoose.Schema({
@@ -8,7 +9,7 @@ const cartItemSchema = mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    unique: true
+    // unique: true,
   },
   quantity: {
     type: Number,
@@ -30,8 +31,8 @@ const cartItemSchema = mongoose.Schema({
   totalAmount: {
     type: Number,
     default: 0,
-    required:true,
-    min: 0
+    required: true,
+    min: 0,
   },
 
   //Ref
@@ -40,50 +41,55 @@ const cartItemSchema = mongoose.Schema({
     required: true,
     ref: "Product",
   }, // => productId
-})
+});
 
 //Schema
-const cartSchema = mongoose.Schema({
-  //Normal
-  totalCost: {
-    type: Number,
-    required: true,
-    default: 0,
-    min: 0,
+const cartSchema = mongoose.Schema(
+  {
+    //Normal
+    totalCost: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: 0,
+    },
+    items: [cartItemSchema], // => CartItems
+
+    //Ref
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "User",
+    }, // => userId
   },
-  items: [cartItemSchema], // => CartItems
+  {
+    timestamps: true,
+  }
+);
 
-  //Ref
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: "User",
-  }, // => userId
-}, {
-  timestamps: true
-})
-
-cartSchema.plugin(uniqueValidator)
+cartSchema.plugin(uniqueValidator);
 
 //middleware
-cartSchema.pre('save', function (next) {
+cartSchema.pre("save", function (next) {
   try {
-    const cart = this
+    const cart = this;
+
+    //Reset cart.totalCost to 0
+    cart.totalCost = 0;
+
     cart.items.forEach((item) => {
-      item.totalAmount = item.amount * item.quantity
-      cart.totalCost +=item.totalAmount
-    })
-    
+      item.totalAmount = item.amount * item.quantity;
+      cart.totalCost += item.totalAmount;
+    });
   } catch (e) {
-    console.log(e)
+    console.log(e);
   }
-  next()
-})
+  next();
+});
 
 //Model
-const Cart = mongoose.model("Cart", cartSchema)
-module.exports = Cart
-
+const Cart = mongoose.model("Cart", cartSchema);
+module.exports = Cart;
 
 // //Test
 // const cart = new Cart({
@@ -116,4 +122,3 @@ module.exports = Cart
 // }
 
 // test()
-

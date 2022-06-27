@@ -1,6 +1,6 @@
-const mongoose = require("mongoose")
-const uniqueValidator = require("mongoose-unique-validator")
-const validator = require("validator")
+const mongoose = require("mongoose");
+const uniqueValidator = require("mongoose-unique-validator");
+const validator = require("validator");
 
 //Subschemas
 const briefInformationSchema = mongoose.Schema({
@@ -32,11 +32,11 @@ const briefInformationSchema = mongoose.Schema({
 
     validate(pages) {
       if (!validator.isInt(String(pages)))
-        throw new Error(`${pages} is not an integer value`)
-      if (pages <= 0) throw new Error("Pages must be positive number")
+        throw new Error(`${pages} is not an integer value`);
+      if (pages <= 0) throw new Error("Pages must be positive number");
     },
   },
-})
+});
 
 const imageSchema = mongoose.Schema({
   img: {
@@ -46,7 +46,7 @@ const imageSchema = mongoose.Schema({
   altImg: {
     type: String,
   },
-})
+});
 
 //////////////////////////////////////////////////////////
 //Schema
@@ -55,7 +55,7 @@ const productSchema = mongoose.Schema({
   title: {
     type: String,
     required: true,
-    unique: true,
+    // unique: true,
     trim: true,
   },
 
@@ -69,7 +69,6 @@ const productSchema = mongoose.Schema({
   salePrice: {
     type: Number,
     required: true,
-
     min: 0,
   },
   quantity: {
@@ -79,7 +78,7 @@ const productSchema = mongoose.Schema({
 
     validate(value) {
       if (!validator.isInt(value.toString())) {
-        throw new Error("Quantity should be an integer")
+        throw new Error("Quantity should be an integer");
       }
     },
     //không xét min vì có thể âm
@@ -124,9 +123,11 @@ const productSchema = mongoose.Schema({
     required: true,
     ref: "Category",
   }, //=> categoryId
-})
+});
 
-productSchema.plugin(uniqueValidator)
+// productSchema.plugin(uniqueValidator);
+// briefInformationSchema.index({ "$**": "text" });
+// productSchema.index({ "$**": "text" });
 
 //middleware
 productSchema.pre("validate", function (next) {
@@ -135,15 +136,16 @@ productSchema.pre("validate", function (next) {
       "salePrice",
       "Sale price is over list price",
       this.salePrice
-    )
+    );
   }
 
-  next()
-})
+  next();
+});
 
 //Model
-const Product = mongoose.model("product", productSchema)
-module.exports = Product
+const Product = mongoose.model("product", productSchema);
+// Product.createIndexes({ default_language: "Tiếng việt" });
+module.exports = Product;
 
 // //Test
 // const product = new Product({
@@ -161,12 +163,11 @@ module.exports = Product
 //   category: "123456789012345678901234",
 // })
 
-// const test= async() => {
-//     try {
-//       await product.save()
-//     } catch (error) {
-//       console.log(error)
-//     }
-// }
-
-// test()
+const test = async () => {
+  try {
+    await data3.save();
+  } catch (error) {
+    console.log(error);
+  }
+};
+// test();
