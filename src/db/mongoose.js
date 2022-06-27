@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/book-store", {
-    autoIndex: false,
+    autoIndex: true,
   })
   .then(() => console.log("DB mongodb connection is ON"))
   .catch(() => console.log("DB mongodb connection FAIL"));

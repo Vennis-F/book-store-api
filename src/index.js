@@ -77,3 +77,7 @@ const Product = require("./models/product");
 // saveCateCrawl();
 // createDataCrawl();
 // saveDataCrawl();
+
+// Product.find({ $text: { $search: "Card" } })
+//   .then((result) => console.log(result))
+//   .catch((error) => console.log(error));

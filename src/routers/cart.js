@@ -44,68 +44,48 @@ FLOW totalAmount:
 //POST /cart/rebuy (Add items from order to cart)
     */
 
-//POST /cart/rebuy
-router.post("/rebuy", auth, authorize("customer"), async (req, res) => {
-  const jsonData = [
-    {
-      id: "abc",
-      quantity: 1,
-    },
-    {
-      id: "cde",
-      quantity: 1,
-    },
-  ];
-  const { lstProductOrder } = req.body;
-
+//POST /cart/rebuy/:id (orderId)
+router.post("/rebuy/:id", auth, authorize("customer"), async (req, res) => {
+  const orderItems = req.body;
   try {
     //Find and Check cart exist, if not create new
     let cart = await getCartorNewCart(req.user._id);
 
-    //Check product exist and Check product available
-    let lstProduct = lstProductOrder.map((product) => {
-      return Product.findById(product.id);
-    });
-    lstProduct = await Promise.all(lstProduct);
+    //Each order item will add to cart
+    for (let i = 0; i < orderItems.length; i++) {
+      const { id, quantity } = orderItems[i];
+      const product = await Product.findById(id);
 
-    for (let i = 0; i < lstProduct.length; i++) {
-      addCartItem(cart, product, qNeed);
-      const element = array[i];
-    }
-    lstProduct.forEach((product) => {
-      addCartItem(cart, product, qNeed);
-    });
+      //Check product: exist, status is true, quantity = 0
+      if (!product || !product.status || product.quantity === 0) continue;
+      console.log("-----------");
+      //Check enough quantity of product: (từ 1 trở lên)
+      const qNeed = cEnoughQuantity(product.quantity, quantity);
+      console.log(qNeed);
+      //Check cart duplicated
+      const cartItemDuplicated = await Cart.findOne({
+        _id: cart._id,
+        "items.product": id,
+      });
 
-    //Check status === false
-    lstProduct.if(!product.status || product.quantity === 0);
-    throw new Error("Product is not available or quantity is only 0 ");
-
-    //Check enough quantity of product: (từ 1 trở lên)
-    const qNeed = cEnoughQuantity(product.quantity, req.body.quantity);
-
-    //Check cart duplicated
-    const cartItemDuplicated = await Cart.findOne({
-      _id: cart._id,
-      "items.product": req.body.productId,
-    });
-    console.log(cartItemDuplicated);
-
-    if (cartItemDuplicated) {
-      //Case: cart item is duplicated
-      uCartItem(cart, req.body.productId, product.quantity, qNeed);
-    } else {
-      //Case: Cart item is not exist
-      addCartItem(cart, product, qNeed);
+      if (cartItemDuplicated) {
+        //Case: cart item is duplicated
+        uCartItem(cart, id, product.quantity, qNeed);
+      } else {
+        //Case: Cart item is not exist
+        addCartItem(cart, product, qNeed);
+      }
     }
 
     //Saved cart
     const cartSaved = await cart.save({ validateModifiedOnly: true });
+    console.log(cartSaved);
     res.status(201).send(cartSaved);
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    console.log(error);
     if (e.name === "CastError" && e.kind === "ObjectId")
       return res.status(400).send({ error: "Invalid ID" });
-    res.status(400).send({ error: e.message });
+    res.status(400).send({ error });
   }
 });
 

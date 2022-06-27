@@ -126,6 +126,8 @@ const productSchema = mongoose.Schema({
 });
 
 // productSchema.plugin(uniqueValidator);
+// briefInformationSchema.index({ "$**": "text" });
+// productSchema.index({ "$**": "text" });
 
 //middleware
 productSchema.pre("validate", function (next) {
@@ -142,6 +144,7 @@ productSchema.pre("validate", function (next) {
 
 //Model
 const Product = mongoose.model("product", productSchema);
+// Product.createIndexes({ default_language: "Tiếng việt" });
 module.exports = Product;
 
 // //Test

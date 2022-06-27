@@ -48,14 +48,36 @@ router.get("/me/:id", auth, authorize("customer"), async (req, res) => {
   }
 });
 
+//GET /orders/me/:id (get order detail by order id) -me
+router.get("/guest/:id", async (req, res) => {
+  try {
+    let order = await Order.findOne({
+      _id: req.params.id,
+    });
+
+    //Check order exist
+    if (!order) return res.sendStatus(404);
+
+    order = await orderPopulateOrderItem(order);
+    res.send(order);
+  } catch (e) {
+    if (e.name === "CastError" && e.kind === "ObjectId")
+      return res.status(400).send({ error: "Invalid ID" });
+    res.status(500).send(e);
+  }
+});
+
 //PATCH /orders/me/:id
 // router.patch("/");
 
 //DELETE /orders/me/:id
 //DELETE /cart/empty
-router.delete("/order/:id", auth, authorize("customer"), async (req, res) => {
+router.delete("/me/:id", auth, authorize("customer"), async (req, res) => {
   try {
-    let order = await Order.find({ owner: req.user._id });
+    let order = await Order.findOne({
+      owner: req.user._id,
+      _id: req.params.id,
+    });
 
     //Không tìm thấy order
     if (!order) return res.status(404).send({ error: "Order not found!" });
@@ -67,7 +89,7 @@ router.delete("/order/:id", auth, authorize("customer"), async (req, res) => {
         .send({ error: "Không thể cancel vì order không ở status submitted" });
 
     //Trả lại quantity cho products
-    orderPopulateOrderItem(order);
+    await orderPopulateOrderItem(order);
     for (let i = 0; i < order.items.length; i++) {
       const productId = order.items[i].product._id;
       const quantity = order.items[i].quantity;
@@ -84,6 +106,7 @@ router.delete("/order/:id", auth, authorize("customer"), async (req, res) => {
     await order.save();
     res.status(200).send(order);
   } catch (error) {
+    console.log(error);
     res.status(500).send({ error });
   }
 });
