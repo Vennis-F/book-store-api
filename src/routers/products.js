@@ -3,10 +3,14 @@ const authorize = require("../middlewares/authorize");
 const Product = require("../models/product");
 const router = require("express").Router();
 const { isValidUpdate, updatesFilter } = require("../utils/valid");
+const Category = require("../models/category");
 
 //POST /products
 router.post("/", async (req, res) => {
+  console.log(req.body);
   const product = new Product({ ...req.body });
+  console.log("-----------------------");
+  console.log(product);
   try {
     const productSaved = await product.save();
     res.status(201).send(productSaved);
@@ -120,6 +124,83 @@ router.get("/size", async (req, res) => {
   }
 });
 
+router.get("/test", async (req, res) => {
+  console.log("---------");
+  const { feartured, limit, page, sortBy, publicDate, status } = req.query;
+  const match = {};
+  const sort = { "briefInformation.publicDate": -1 };
+  const options = {
+    limit: 12,
+    skip: 0,
+    sort,
+  };
+
+  //Product fearture
+  if (feartured) {
+    match.feartured = feartured === "true";
+  }
+  //Product status
+  if (status) {
+    match.status = status === "true";
+  }
+
+  //Paging
+  if (limit) options.limit = parseInt(limit);
+  if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
+  if (publicDate) {
+    sort["briefInformation.publicDate"] = publicDate === "desc" ? -1 : 1;
+  }
+  const count = await Product.countDocuments();
+  try {
+    const products = await Product.find(match, null, options);
+    const lstProducts = await Promise.all(
+      products.map((product) =>
+        product.populate({ path: "category", model: Category })
+      )
+    );
+    console.log(lstProducts);
+    console.log("---------");
+    res.send({ products, count });
+  } catch (e) {
+    console.log(e);
+    res.status(500).send();
+  }
+});
+
+// router.get("/test", async (req, res) => {
+//   const { feartured, limit, page, sortBy, publicDate, status } = req.query;
+//   const match = {};
+//   const sort = { "briefInformation.publicDate": -1 };
+//   const options = {
+//     limit: 12,
+//     skip: 0,
+//     sort,
+//   };
+
+//   //Product fearture
+//   if (feartured) {
+//     match.feartured = feartured === "true";
+//   }
+//   //Product status
+//   if (status) {
+//     match.status = status === "true";
+//   }
+
+//   //Paging
+//   if (limit) options.limit = parseInt(limit);
+//   if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
+//   if (publicDate) {
+//     sort["briefInformation.publicDate"] = publicDate === "desc" ? -1 : 1;
+//   }
+//   const count = await Product.countDocuments();
+//   try {
+//     const products = await Product.find(match, null, options);
+//     res.send({ products, count });
+//   } catch (e) {
+//     res.status(500).send();
+//   }
+// });
+
 //GET /products/:id
 router.get("/:id", async (req, res) => {
   try {
@@ -157,7 +238,7 @@ router.get("/:id", async (req, res) => {
 
 //PATCH /categories/:id (ALL field)
 
-router.patch("/:id", auth, authorize("marketing"), async (req, res) => {
+router.put("/:id", async (req, res) => {
   let updates = updatesFilter(req.body);
   const allowUpdateds = [
     "title",
@@ -174,6 +255,7 @@ router.patch("/:id", auth, authorize("marketing"), async (req, res) => {
     "pages",
     "category",
     "thumbnail",
+    "id",
   ];
   if (!isValidUpdate(updates, allowUpdateds))
     return res.status(400).send({ error: "Invalid updates" });
