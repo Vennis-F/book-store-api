@@ -13,6 +13,8 @@ const {
   updateNewProductCartItemCustomer,
 } = require("../utils/cart");
 const Product = require("../models/product");
+const User = require("../models/user");
+const Role = require("../models/role");
 
 //POST /checkout (not check exist cart or cart empty)
 router.post("/", auth, authorize("customer"), async (req, res) => {
@@ -298,6 +300,12 @@ router.patch("/confirm", auth, authorize("customer"), async (req, res) => {
 
     //Empty receiverInfor data
     req.session.receiverInfo = "";
+
+    //Tạo một object
+    const roleSaler = await Role.findOne({ name: "saler" });
+    const lstSaler = await User.find({ role: roleSaler._id, status: true });
+    await Promise.all(lstSaler.map((saler) => saler.populate("orders")));
+    console.log(lstSaler);
 
     res.send();
   } catch (error) {

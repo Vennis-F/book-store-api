@@ -16,6 +16,23 @@ router.post("/", auth, authorize("admin"), async (req, res) => {
   }
 });
 
+//POST /roles/authorize
+router.post("/authorize", async (req, res) => {
+  const { allowed, role } = req.body;
+  try {
+    const allowedPopulate = await Promise.all(
+      allowed.map((roleName) => Role.findOne({ name: roleName }))
+    );
+
+    console.log(allowedPopulate);
+    const isAllowed = allowedPopulate.some((item) => item.code === role);
+    console.log(isAllowed);
+    res.status(200).send({ isAllowed });
+  } catch (error) {
+    res.status(400).send({ error });
+  }
+});
+
 //GET /roles
 router.get("/", auth, authorize("admin"), async (req, res) => {
   try {
