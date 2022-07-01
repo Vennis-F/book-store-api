@@ -47,7 +47,8 @@ const postSchema = mongoose.Schema(
     },
 
     //normal
-    thumnbail: imageSchema,
+    thumbnail: imageSchema,
+    images: [imageSchema],
 
     //Ref:
     author: {

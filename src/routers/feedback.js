@@ -1,21 +1,30 @@
 const { auth } = require("../middlewares/auth");
 const authorize = require("../middlewares/authorize");
-const Product = require("../models/product");
+const Feedback = require("../models/feedback");
+const User = require("../models/user");
 const router = require("express").Router();
 const { isValidUpdate, updatesFilter } = require("../utils/valid");
-const Category = require("../models/category");
 
-//POST /products
+
+        //////Common  
+//POST /feedbacks
 router.post("/", async (req, res) => {
-  console.log(req.body);
-  const product = new Product({ ...req.body });
-  console.log("-----------------------");
-  console.log(product);
+  const feedback = new Feedback({ ...req.body });
+
+  const userInfo = await User.findOne({email: feedback.user.email})
+  console.log(userInfo)
+  
+  if(userInfo) {
+    feedback.user.userAccount = userInfo._id
+  }
+  console.log(feedback);
+
   try {
-    const productSaved = await product.save();
-    res.status(201).send(productSaved);
+    feedback.save();
+    res.status(201).send(feedback);
   } catch (e) {
     res.status(400).send(e);
+    console.log(e)
   }
 });
 

@@ -96,11 +96,13 @@ const userSchema = mongoose.Schema({
     ref: "Role",
   }, // => roleID
 });
+
 userSchema.virtual("orders", {
   ref: "Order",
   localField: "_id",
   foreignField: "saler",
 });
+
 userSchema.plugin(uniqueValidator);
 
 //method model and method Instance
@@ -156,19 +158,19 @@ userSchema.pre("save", async function (next) {
 const User = mongoose.model("User", userSchema);
 module.exports = User;
 
-//Test
+// //Test
 // const user = new User({
 //   fullName: "Anh",
-//   email: "hoanganh@gmail.com",
-//   password: "123456",
+//   email: "marketing@gmail.com",
+//   password: "12345678",
 //   gender: "F",
 //   phone: "0387897777878",
 //   address: "sfd",
 //   avatar: { img: "link img" },
-//   role: "123456789012345678901234",
-// })
-// console.log(user)
-// user.validate((err) => {
-//   if (err) return console.log(err.message)
-//   console.log("GOOD")
-// })
+//   role: "62ba81409b95ac64d5dfe805",
+// });
+// console.log(user);
+// user.save((err) => {
+//   if (err) return console.log(err.message);
+//   console.log("GOOD");
+// });
