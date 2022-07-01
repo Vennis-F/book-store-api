@@ -8,7 +8,7 @@ const { isValidUpdate } = require("../utils/valid");
 //this will auto update the author name
 router.post("/", auth, authorize("marketing"), async (req, res) => {
   const post = new Post(req.body);
-  post.author= req.user._id
+  post.author = req.user._id;
   try {
     await post.save();
     res.sendStatus(201);
@@ -45,20 +45,26 @@ router.get("/:id", auth, authorize("marketing"), async (req, res) => {
 //PATCH /posts/:id
 router.patch("/:id", auth, authorize("marketing"), async (req, res) => {
   const updates = Object.keys(req.body);
-  const allowUpdateds = ['title','brief','description',
-                        'category','featured','status',
-                        'thumbnail','author'];
-                        
+  const allowUpdateds = [
+    "title",
+    "brief",
+    "description",
+    "category",
+    "featured",
+    "status",
+    "thumbnail",
+    "author",
+  ];
+
   if (!isValidUpdate(updates, allowUpdateds))
     return res.status(400).send({ error: "Invalid updates" });
- 
+
   try {
     //Find and Update post
-    const post = await Post.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { runValidators: true, new: true }
-    );
+    const post = await Post.findByIdAndUpdate(req.params.id, req.body, {
+      runValidators: true,
+      new: true,
+    });
 
     //Find and Check cate exist:
     if (!post) return res.sendStatus(404);

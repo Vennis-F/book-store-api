@@ -12,7 +12,8 @@ const ordersRouter = require("./routers/orders");
 const sessionRouter = require("./routers/session");
 const postRouter = require("./routers/post");
 const blogRouter = require("./routers/blog");
-const feedbackRouter = require('./routers/feedback')
+const feedbackRouter = require("./routers/feedback");
+const sliderRouter = require("./routers/slider");
 const app = express();
 const port = process.env.PORT || 6969;
 
@@ -56,7 +57,8 @@ app.use("/orders", ordersRouter);
 app.use("/session", sessionRouter);
 app.use("/posts", postRouter);
 app.use("/blogs", blogRouter);
-app.use("/feedbacks", feedbackRouter)
+app.use("/feedbacks", feedbackRouter);
+app.use("/sliders", sliderRouter);
 
 require("./models/slider");
 
