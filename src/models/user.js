@@ -96,6 +96,13 @@ const userSchema = mongoose.Schema({
     ref: "Role",
   }, // => roleID
 });
+
+userSchema.virtual("orders", {
+  ref: "Order",
+  localField: "_id",
+  foreignField: "saler",
+});
+
 userSchema.plugin(uniqueValidator);
 
 //method model and method Instance

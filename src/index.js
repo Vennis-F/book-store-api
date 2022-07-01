@@ -1,6 +1,7 @@
 const express = require("express");
 const session = require("express-session");
 const cors = require("cors");
+const frameguard = require("frameguard");
 const MongoStore = require("connect-mongo");
 const userRouter = require("./routers/user");
 const categoriesRouter = require("./routers/categories");
@@ -18,6 +19,7 @@ const app = express();
 const port = process.env.PORT || 6969;
 
 //Config
+app.use(frameguard({ action: "SAMEORIGIN" }));
 require("./db/mongoose");
 app.use(express.json());
 app.use(
