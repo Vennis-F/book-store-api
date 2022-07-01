@@ -22,6 +22,7 @@ router.post("/", async (req, res) => {
 
 //GET /sliders
 router.get("/", async (req, res) => {
+  11;
   try {
     const sliders = await Slider.find({});
     const count = await Slider.countDocuments();
