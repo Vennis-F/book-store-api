@@ -1,6 +1,7 @@
 const express = require("express");
 const session = require("express-session");
 const cors = require("cors");
+const frameguard = require("frameguard");
 const MongoStore = require("connect-mongo");
 const userRouter = require("./routers/user");
 const categoriesRouter = require("./routers/categories");
@@ -12,11 +13,13 @@ const ordersRouter = require("./routers/orders");
 const sessionRouter = require("./routers/session");
 const postRouter = require("./routers/post");
 const blogRouter = require("./routers/blog");
-const feedbackRouter = require('./routers/feedback')
+const feedbackRouter = require("./routers/feedback");
+const sliderRouter = require("./routers/slider");
 const app = express();
 const port = process.env.PORT || 6969;
 
 //Config
+app.use(frameguard({ action: "SAMEORIGIN" }));
 require("./db/mongoose");
 app.use(express.json());
 app.use(
@@ -56,7 +59,8 @@ app.use("/orders", ordersRouter);
 app.use("/session", sessionRouter);
 app.use("/posts", postRouter);
 app.use("/blogs", blogRouter);
-app.use("/feedbacks", feedbackRouter)
+app.use("/feedbacks", feedbackRouter);
+app.use("/sliders", sliderRouter);
 
 require("./models/slider");
 

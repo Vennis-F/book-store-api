@@ -104,6 +104,12 @@ userSchema.virtual('posts', {
   foreignField: 'author'
 })
 
+userSchema.virtual("orders", {
+  ref: "Order",
+  localField: "_id",
+  foreignField: "saler",
+});
+
 userSchema.plugin(uniqueValidator);
 
 //method model and method Instance
