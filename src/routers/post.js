@@ -2,6 +2,8 @@ const router = require("express").Router();
 const { auth } = require("../middlewares/auth");
 const authorize = require("../middlewares/authorize");
 const Post = require("../models/post");
+const Role = require("../models/role");
+const User = require("../models/user");
 const { isValidUpdate } = require("../utils/valid");
 
 //POST /posts
@@ -17,13 +19,65 @@ router.post("/", auth, authorize("marketing"), async (req, res) => {
   }
 });
 
-//GET /posts
+//GET /posts  
+              //Post lists  
+//filter : category, author, status
+              //category=...&author=...&status=...
+//sortable: title, category, author, featured, status
+              //sortedBy=title_desc //sortedBy=status_asc
 router.get("/", auth, authorize("marketing"), async (req, res) => {
   try {
-    const posts = await Post.find({});
-    res.send(posts);
+    const {category, author, status, sortedBy, limit, page} = req.query
+    const match= {}
+    const sort= {createdAt:-1}
+    const options= {sort}
+    
+    //filter
+    if(category) {
+      match.category= new RegExp(category.trim(),'gi')
+    }
+
+    if(status) {
+      match.status= (status==="true")
+    }
+
+    //sort
+    if(sortedBy) {
+      const parts = sortedBy.split('_')       // param: sortedBy=auhor_desc 
+      sort[parts[0]] = (parts[1] === 'desc' ? -1 : 1)
+      options.sort=sort
+    }
+
+    //Paging
+    if(limit) options.limit = parseInt(limit)
+    if(page) options.skip= parseInt(limit) * (parseInt(page) - 1);
+
+
+    // if no populate (author)
+    if(!author) {
+      const posts = await Post.find(match,null,options).populate({path:'author', select: 'fullName'});
+      res.send(posts);
+    }else {
+      const marketingRoleId = await Role.findOne({name: 'marketing'})
+      const authors = await User.find({
+        fullName: new RegExp(author,'gi'),
+        role: marketingRoleId}).populate({
+          path:'posts',
+          match,
+          options})
+
+      const authorsPosts=[]  
+      for (const author of authors) {
+        for (const post of author.posts) {
+          await post.populate({path:'author', select: 'fullName'})
+          authorsPosts.push(post)
+          console.log(authorsPosts)}
+      }
+      res.send(authorsPosts)
+    }
+    
   } catch (e) {
-    res.status(500).send();
+    res.status(500).send(e);
   }
 });
 
