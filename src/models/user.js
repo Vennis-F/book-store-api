@@ -4,6 +4,7 @@ const validator = require("validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Role = require("../models/role");
+const Post = require("../models/post")
 require("../models/role");
 
 //SubSchema
@@ -96,6 +97,12 @@ const userSchema = mongoose.Schema({
     ref: "Role",
   }, // => roleID
 });
+
+userSchema.virtual('posts', {
+  ref: 'Post',
+  localField: '_id',
+  foreignField: 'author'
+})
 
 userSchema.virtual("orders", {
   ref: "Order",

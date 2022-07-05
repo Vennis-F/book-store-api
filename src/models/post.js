@@ -53,7 +53,6 @@ const postSchema = mongoose.Schema(
     //Ref:
     author: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
       ref: "User",
     }, //=> userId
   },
@@ -65,10 +64,10 @@ const postSchema = mongoose.Schema(
 postSchema.plugin(uniqueValidator)
 
 //Model
-const Post = mongoose.model("post", postSchema)
+const Post = mongoose.model("Post", postSchema)
 module.exports = Post
 
-//Test
+// Test
 // const post = new Post({
 //   category: "Review có tâm nhất quả đất",
 //   description: "Éo biết",
