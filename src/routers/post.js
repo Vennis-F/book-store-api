@@ -25,9 +25,11 @@ router.post("/", auth, authorize("marketing"), async (req, res) => {
               //category=...&author=...&status=...
 //sortable: title, category, author, featured, status
               //sortedBy=title_desc //sortedBy=status_asc
+//search by title
+              //searchByTitle=...
 router.get("/", auth, authorize("marketing"), async (req, res) => {
   try {
-    const {category, author, status, sortedBy, limit, page} = req.query
+    const {category, author, status, sortedBy, limit, page, searchByTitle} = req.query
     const match= {}
     const sort= {createdAt:-1}
     const options= {sort}
@@ -52,6 +54,15 @@ router.get("/", auth, authorize("marketing"), async (req, res) => {
     if(limit) options.limit = parseInt(limit)
     if(page) options.skip= parseInt(limit) * (parseInt(page) - 1);
 
+    //If search by title, then search and return
+    if(searchByTitle) {
+      console.log(searchByTitle)
+      let title = new RegExp(searchByTitle,'gi')
+      let posts = await Post.find({title},null,options)
+      if(!posts) 
+        return res.status(404).send()
+      return res.send(posts)
+    }
 
     // if no populate (author)
     if(!author) {
