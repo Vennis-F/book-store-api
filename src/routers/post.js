@@ -125,14 +125,15 @@ router.patch("/:id", auth, authorize("marketing"), async (req, res) => {
     return res.status(400).send({ error: "Invalid updates" });
 
   try {
-    //Find and Update post
-    const post = await Post.findByIdAndUpdate(req.params.id, req.body, {
-      runValidators: true,
-      new: true,
-    });
+    const post = await Post.findById(req.params.id)
+    
+    if (!post) 
+      return res.sendStatus(404);
 
-    //Find and Check cate exist:
-    if (!post) return res.sendStatus(404);
+    updates.forEach((update) => {
+        post[update] = req.body[update]
+    })
+    await post.save()
 
     res.send(post);
   } catch (e) {
@@ -142,6 +143,18 @@ router.patch("/:id", auth, authorize("marketing"), async (req, res) => {
   }
 });
 
-//DELETE /posts
+//DELETE /posts/:id
+router.delete('/:id',auth, authorize('marketing'), async (req,res) => {
+  try {
+    const post = await Post.findByIdAndDelete(req.params.id)
+    if(!post) 
+      return res.status(404).send()
+    
+    res.send(post)
+  } catch (error) {
+      res.status(500).send(error)  
+  }
+})
+
 
 module.exports = router;
