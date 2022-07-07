@@ -56,7 +56,7 @@ const customerSchema = mongoose.Schema(
     },
 
     //Ref
-    updateBy: {
+    updatedBy: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
       ref: "User",
