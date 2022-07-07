@@ -16,13 +16,7 @@ const port = process.env.PORT || 6969;
 //Config
 require("./db/mongoose");
 app.use(express.json());
-app.use(
-  cors({
-    credentials: true,
-    origin: "*",
-    methods: ["POST", "DELETE", "UPDATE", "PUT", "PATCH"],
-  })
-);
+app.use(cors({ credentials: true, origin: 'http://localhost:5000' }));
 
 //Session
 app.use(
