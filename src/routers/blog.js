@@ -3,9 +3,17 @@ const Post = require("../models/post");
 
 //customer & guest rout to check Blogs
 //GET /blogs
+  //pagination  ?limit=...&page=...
 router.get("/", async (req, res) => {
   try {
-    const posts = await Post.find({});
+    const {limit, page} = req.query
+    const options={sort:{createdAt:-1}}
+    
+    //Pagination
+    if(limit) options.limit=parseInt(limit)
+    if(page) options.skip= parseInt(limit) * (parseInt(page) - 1);
+
+    const posts = await Post.find({},null,options);
     res.send(posts);
   } catch (e) {
     res.status(500).send();

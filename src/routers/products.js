@@ -5,20 +5,8 @@ const router = require("express").Router();
 const { isValidUpdate, updatesFilter } = require("../utils/valid");
 const Category = require("../models/category");
 
-//POST /products
-router.post("/", async (req, res) => {
-  console.log(req.body);
-  const product = new Product({ ...req.body });
-  console.log("-----------------------");
-  console.log(product);
-  try {
-    const productSaved = await product.save();
-    res.status(201).send(productSaved);
-  } catch (e) {
-    res.status(400).send(e);
-  }
-});
 
+              ///////////////////////////////////COMMON///////////////////////////////////////
 //GET /products?featured=true
 router.get("/", async (req, res) => {
   const { feartured, limit, page, sortBy, publicDate, status } = req.query;
@@ -289,5 +277,20 @@ router.put("/:id", async (req, res) => {
 
 //PATCH  /products/deactive
 //DELETE /products
+
+
+//POST /products
+router.post("/",auth, authorize('marketing'), async (req, res) => {
+  console.log(req.body);
+  const product = new Product({ ...req.body });
+  console.log("-----------------------");
+  console.log(product);
+  try {
+    const productSaved = await product.save();
+    res.status(201).send(productSaved);
+  } catch (e) {
+    res.status(400).send(e);
+  }
+});
 
 module.exports = router;
