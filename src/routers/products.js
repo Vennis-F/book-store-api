@@ -112,9 +112,19 @@ router.get("/size", async (req, res) => {
   }
 });
 
-router.get("/test", async (req, res) => {
-  console.log("---------");
-  const { feartured, limit, page, sortBy, publicDate, status } = req.query;
+
+
+
+              ////////////////////////////////////Marketing//////////////////////////// 
+
+//GEt /products/marketing
+        //get product list
+//Pagination:     ?limit=...&page=...
+//Filter:         ?category=...&status=...
+//Sort:           ?sortedBy=  title/category/listPrice/salePrice/featured/status_desc/asc
+                        // ex: sortedBy=title_desc          //ex:sortedBy=status_asc
+router.get("/marketing", async (req, res) => {
+  const { category, sortedBy, feartured, limit, page, sortBy, publicDate, status } = req.query;
   const match = {};
   const sort = { "briefInformation.publicDate": -1 };
   const options = {
