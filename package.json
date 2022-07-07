@@ -18,6 +18,7 @@
     "cors": "^2.8.5",
     "express": "^4.18.1",
     "express-session": "^1.17.3",
+    "frameguard": "^4.0.0",
     "jsonwebtoken": "^8.5.1",
     "mailgun-js": "^0.22.0",
     "mongoose": "^6.3.5",

@@ -1,5 +1,5 @@
-const mongoose = require("mongoose")
-const uniqueValidator = require("mongoose-unique-validator")
+const mongoose = require("mongoose");
+const uniqueValidator = require("mongoose-unique-validator");
 
 // SubSchema
 const imageSchema = mongoose.Schema({
@@ -10,7 +10,7 @@ const imageSchema = mongoose.Schema({
   altImg: {
     type: String,
   },
-})
+});
 
 // Schema
 const sliderSchema = mongoose.Schema({
@@ -40,14 +40,14 @@ const sliderSchema = mongoose.Schema({
   },
 
   //normal
-  images: [imageSchema],
-})
+  image: imageSchema,
+});
 
-sliderSchema.plugin(uniqueValidator)
+sliderSchema.plugin(uniqueValidator);
 
 //Model
-const Slider = mongoose.model("slider", sliderSchema)
-module.exports = Slider
+const Slider = mongoose.model("slider", sliderSchema);
+module.exports = Slider;
 
 //Test
 // const slider = new Slider({

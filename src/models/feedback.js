@@ -46,19 +46,12 @@ const userInfoSchema = mongoose.Schema({
         throw new Error("This is not a phone number")
       }
     },
-  }
-})
-
-//user info of the feedback, can be accounte-user or non-account-user
-const feedbackUserSchema = mongoose.Schema({
+  },
   //Ref to user account if they have
   userAccount: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
   }, // => User id
-
-  //If they dont have account, get their infomation
-  userInfo: userInfoSchema
 })
 
 //////////////////////////////////////////////////////////////////////////
@@ -96,7 +89,7 @@ const feedbackSchema = mongoose.Schema({
     ref: "Product",
   }, // => productID
   user: {
-    type: feedbackUserSchema,
+    type: userInfoSchema,
     required: true
   }, // => userID
   order: {
@@ -107,16 +100,16 @@ const feedbackSchema = mongoose.Schema({
 feedbackSchema.plugin(uniqueValidator)
 
 //middleware
-feedbackSchema.pre('save',function(next) {
-    try {
-      const feedbackUser = this.user
-      if(!feedbackUser.userAccount && !feedbackUser.userInfo)
-        throw new Error("Feedback's user information required")
-    } catch (error) {
-        console.log(error)
-    }
+feedbackSchema.pre('save', function (next) {
+  try {
+    const feedbackUser = this.user
+    if (!feedbackUser.userAccount && !feedbackUser.userInfo)
+      throw new Error("Feedback's user information required")
+  } catch (error) {
+    console.log(error)
+  }
 
-    next()
+  next()
 })
 
 //Model
@@ -124,27 +117,29 @@ const Feedback = mongoose.model("Feedback", feedbackSchema)
 module.exports = Feedback
 
 //Test
-const feedback = new Feedback({
-  user: {userInfo:{
-    name: "Tho",
-    email:"tho@gami.com",
-    gender:"M",
-    phone: "0907873122"
-  }},
-  product: "123456789012345678901234",
-  content: "Some feedback about product",
-  star: 4,
-})
+// const feedback = new Feedback({
+//   user: {
+//     userInfo: {
+//       name: "Tho",
+//       email: "tho@gami.com",
+//       gender: "M",
+//       phone: "0907873122"
+//     }
+//   },
+//   product: "123456789012345678901234",
+//   content: "Some feedback about product",
+//   star: 4,
+// })
 
-mongoose
-    .connect("mongodb://127.0.0.1:27017/book-store", {
-      autoIndex: false,
-    })
-    .then(() => console.log("DB mongodb connection is ON"))
-    .catch(() => console.log("DB mongodb connection FAIL"))
+// mongoose
+//   .connect("mongodb://127.0.0.1:27017/book-store", {
+//     autoIndex: false,
+//   })
+//   .then(() => console.log("DB mongodb connection is ON"))
+//   .catch(() => console.log("DB mongodb connection FAIL"))
 
-const test = async () => {
-  await feedback.save()
-}
+// const test = async () => {
+//   await feedback.save()
+// }
 
-test()
+// test()
