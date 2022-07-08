@@ -146,11 +146,8 @@ router.get("/test", async (req, res) => {
         product.populate({ path: "category", model: Category })
       )
     );
-    console.log(lstProducts);
-    console.log("---------");
     res.send({ products, count });
   } catch (e) {
-    console.log(e);
     res.status(500).send();
   }
 });

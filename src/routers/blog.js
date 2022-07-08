@@ -3,18 +3,19 @@ const Post = require("../models/post");
 
 //customer & guest rout to check Blogs
 //GET /blogs
-  //pagination  ?limit=...&page=...
+//pagination  ?limit=...&page=...
 router.get("/", async (req, res) => {
   try {
-    const {limit, page} = req.query
-    const options={sort:{createdAt:-1}}
-    
-    //Pagination
-    if(limit) options.limit=parseInt(limit)
-    if(page) options.skip= parseInt(limit) * (parseInt(page) - 1);
+    const { limit, page } = req.query
+    const options = { sort: { createdAt: -1 } }
 
-    const posts = await Post.find({},null,options);
-    res.send(posts);
+    //Pagination
+    if (limit) options.limit = parseInt(limit)
+    if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
+
+    const posts = await Post.find({}, null, options);
+    const count = await Post.countDocuments();
+    res.send({ posts, count });
   } catch (e) {
     res.status(500).send();
   }
