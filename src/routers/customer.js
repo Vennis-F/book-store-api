@@ -33,22 +33,12 @@ router.get("/", auth, authorize("marketing"), async (req, res) => {
     const options= {sort}
     
     //filter
-    if(fullName) {
-      match.fullName= new RegExp(fullName.trim(),'gi')
-    }
-
-    if(email) {
-      match.email= new RegExp(email.trim(),'gi')
-    }
-
-    if(phone) {
-      match.phone= new RegExp(phone.trim(),'gi')
-    }
-
     if(status) {
       let allowedStatus= ["contact", "potential", "customer"]
-      if(isValidUpdate(status,allowedStatus)) 
+      const isValid = allowedStatus.includes(status)
+      if(isValid) {
         match.status= status 
+      }
     }
 
     //sort
@@ -65,7 +55,6 @@ router.get("/", auth, authorize("marketing"), async (req, res) => {
     const customers = await Customer.find(match,null,options);
     
     for(const customer of customers) {
-      console.log(customer.history)
       customer.history=undefined   
     }
     
@@ -91,18 +80,28 @@ router.post('/search', auth, authorize('marketing'), async (req,res) => {
     if(fullName) {
       let fullName= new RegExp(fullName,'gi')
       const customers = await Customer.find({fullName},null,options)
+      for(const customer of customers) {
+        customer.history=undefined   
+      }
       return res.send(customers)
     }
 
     if(email) {
       let email= new RegExp(email,'gi')
       const customers = await Customer.find({email},null,options)
+      for(const customer of customers) {
+        customer.history=undefined   
+      }
+
       return res.send(customers)
     }
 
     if(phone) {
       let phone= new RegExp(phone,'gi')
       const customers = await Customer.find({phone},null,options)
+      for(const customer of customers) {
+        customer.history=undefined   
+      }
       return res.send(customers)
     }
 
