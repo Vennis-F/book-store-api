@@ -34,7 +34,11 @@ const postSchema = mongoose.Schema(
       required: true,
       trim: true,
     },
-    category: { type: String, required: true, trim: true },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "Category",
+    }, //=> categoryId
     featured: {
       type: Boolean,
       required: true,
@@ -45,15 +49,17 @@ const postSchema = mongoose.Schema(
       required: true,
       default: true,
     },
-
     //normal
-    thumbnail: imageSchema,
-    images: [imageSchema],
+    thumbnail: {
+      type: String,
+      required: true,
+    },
 
     //Ref:
     author: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      type: String,
+      required: true,
+      trim: true
     }, //=> userId
   },
   {
