@@ -13,7 +13,7 @@ router.get("/", async (req, res) => {
     if(limit) options.limit=parseInt(limit)
     if(page) options.skip= parseInt(limit) * (parseInt(page) - 1);
 
-    const posts = await Post.find({},null,options);
+    const posts = await Post.find({status:true},null,options);
     res.send(posts);
   } catch (e) {
     res.status(500).send();

@@ -82,10 +82,18 @@ router.get("/", auth, authorize("marketing"), async (req, res) => {
 
 //Post /posts/search
 //search by title     ?title=...
+//pagination          ?limit=...&page=...
 router.post('/search', auth, authorize('marketing'), async (req,res) => {
   try {
+    const {limit, page} = req.query
+    const options={}
     let title= new RegExp(req.query.title,'gi')
-    const post = await Post.find({title})
+
+    //Paging
+    if(limit) options.limit = parseInt(limit)
+    if(page) options.skip= parseInt(limit) * (parseInt(page) - 1);
+
+    const post = await Post.find({title},null, options)
     res.send(post)
   } catch (error) {
     res.status(500).send(error)
