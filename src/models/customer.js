@@ -61,12 +61,33 @@ const customerSchema = mongoose.Schema(
       required: true,
       ref: "User",
     }, // => userID
+
+    //History
+    history: {
+      type: [Object]
+    }
   },
   {
     timestamps: true,
   }
 )
 customerSchema.plugin(uniqueValidator)
+
+customerSchema.pre("save", async function (next) {
+  const customer = this
+  const history= {
+    email:customer.email,
+    fullname:customer.fullName,
+    status:customer.status,
+    gender:customer.gender,
+    phone:customer.phone,
+    address:customer.address,
+    updatedBy: customer.updatedBy,
+    updatedAt: customer.updatedAt}
+    customer.history.push(history)
+    
+  next();
+});
 
 //Model
 const Customer = mongoose.model("Customer", customerSchema)
