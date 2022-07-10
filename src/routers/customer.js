@@ -12,9 +12,10 @@ router.post("/", auth, authorize("marketing"), async (req, res) => {
   customer.updatedBy = req.user._id;
   try {
     await customer.save();
-    res.sendStatus(201);
+    res.status(201).send(customer);
   } catch (e) {
-    res.status(400).send(e);
+    console.log(e.message)
+    res.status(500).send(e);
   }
 });
 
@@ -61,9 +62,14 @@ router.get("/", auth, authorize("marketing"), async (req, res) => {
     if(limit) options.limit = parseInt(limit)
     if(page) options.skip= parseInt(limit) * (parseInt(page) - 1);
 
-    const customers = await Customer.find(match,null,options).populate('updatedBy');
-    res.send(customers);
+    const customers = await Customer.find(match,null,options);
     
+    for(const customer of customers) {
+      console.log(customer.history)
+      customer.history=undefined   
+    }
+    
+    res.send(customers);
   } catch (e) {
     res.status(500).send(e);
   }
@@ -73,26 +79,34 @@ router.get("/", auth, authorize("marketing"), async (req, res) => {
 //search by fullName     ?fullname=...
 //search by email        ?email=...
 //search by phone        ?phone=...
+//Pagination:            ?limit=...&page=...
 router.post('/search', auth, authorize('marketing'), async (req,res) => {
-  const {fullName, email, phone} = req.query
+  const {fullName, email, phone, limit, page} = req.query
+  const options={}
   try {
+    //Paging
+    if(limit) options.limit = parseInt(limit)
+    if(page) options.skip= parseInt(limit) * (parseInt(page) - 1);
+
     if(fullName) {
       let fullName= new RegExp(fullName,'gi')
-      const customers = await Customer.find({fullName})
+      const customers = await Customer.find({fullName},null,options)
       return res.send(customers)
     }
 
     if(email) {
       let email= new RegExp(email,'gi')
-      const customers = await Customer.find({email})
+      const customers = await Customer.find({email},null,options)
       return res.send(customers)
     }
 
     if(phone) {
       let phone= new RegExp(phone,'gi')
-      const customers = await Customer.find({phone})
+      const customers = await Customer.find({phone},null,options)
       return res.send(customers)
     }
+
+    res.send()
     
   } catch (error) {
     res.status(500).send(error)
@@ -102,8 +116,13 @@ router.post('/search', auth, authorize('marketing'), async (req,res) => {
 //GET /customers/:id
 router.get("/:id", auth, authorize("marketing"), async (req, res) => {
   try {
-    const customer = await Customer.findById(req.params.id);
+    let customer = await Customer.findById(req.params.id);
     if (!customer) return res.sendStatus(404);
+   
+    for(const each of customer.history) {
+        const updater =  await User.findById(each.updatedBy)
+        each.updatedBy= updater.fullName
+      }
 
     res.send(customer);
   } catch (e) {
@@ -119,7 +138,6 @@ router.patch("/:id", auth, authorize("marketing"), async (req, res) => {
   const allowUpdateds = [
     "email",
     "fullName",
-    "status",
     "gender",
     "phone",
     "address"
