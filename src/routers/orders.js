@@ -9,6 +9,7 @@ const {
   orderPopulateOrderItem,
 } = require("../utils/order");
 const Product = require("../models/product");
+const { default: mongoose } = require("mongoose");
 const router = require("express").Router();
 
 const getRoleCode = async (name) => {
@@ -137,15 +138,25 @@ router.get("/saleManager", auth, authorize("saleManager"), async (req, res) => {
 
     if(from)
       if(to) {
-        match.from= Date.parse(from)
-        match.to= Date.parse(to)
+        match.createdAt={$gte: Date.parse(from), 
+          $lt: Date.parse(to)}
       }
 
 
     //sort
     if (sortedBy) {
+      const parts = sortedBy.split('_') 
+
+      if(parts[0]==='orderDate') {
+        sort['createdAt']=(parts[1] === 'desc' ? -1 : 1) 
+        options.sort = sort
+      } else if(parts[0]==='customerName') {
+        sort['receiverName']=(parts[1] === 'desc' ? -1 : 1) 
+        options.sort = sort
+      } else {
       sort[parts[0]]=(parts[1] === 'desc' ? -1 : 1) 
       options.sort = sort
+      }
     }
 
     //Paging
@@ -154,41 +165,14 @@ router.get("/saleManager", auth, authorize("saleManager"), async (req, res) => {
 
     const orders = await Order.find(match,null,options).populate({ path: 'saler'});
 
-    // function compareAsc( a, b ) {
-    //   if ( a.product.title < b.product.title ){
-    //     return -1;
-    //   }
-    //   if ( a.product.title > b.product.title ){
-    //     return 1;
-    //   }
-    //   return 0;
-    // }
-
-    // function compareDesc( a, b ) {
-    //   if ( a.product.title < b.product.title ){
-    //     return 1;
-    //   }
-    //   if ( a.product.title > b.product.title ){
-    //     return -1;
-    //   }
-    //   return 0;
-    // }
-
-    // //sort product
-    // if(sort.productName) {
-    //   if(sort.productName===1)
-    //     feedbacks.sort(compareAsc)
-    //   else feedbacks.sort(compareDesc)
-    // }
-
-    // //product filter
-    // if(product) {
-    //   const sendFeedbacks=feedbacks.filter((feedback) => {
-    //     if(feedback.product.title.match(new RegExp(product))) 
-    //       return feedback
-    //   })
-    //   return res.send({ feedbacks:sendFeedbacks, count: sendFeedbacks.length });
-    // }
+    //Saler filter
+    if(saleName) {
+      const sendOrders=orders.filter((order) => {
+        if(order.saler.fullName.match(new RegExp(saleName))) 
+          return order
+      })
+      return res.send({ orders:sendOrders, count: sendOrders.length });
+    }
 
     const count = await Order.countDocuments();
     
@@ -200,28 +184,219 @@ router.get("/saleManager", auth, authorize("saleManager"), async (req, res) => {
   }
 });
 
-//GET /orders/orderdetail/:id (get order detail by order id) - saleManager
-router.get(
-  "/orderdetail/:id",
-  auth,
-  authorize("sale", "saleManager"),
-  async (req, res) => {
+//Post /orders/saleManager/search
+//search by orderId, customerName     ?orderId=...    customerName=...
+//pagination          ?limit=...&page=...
+router.post('/saleManager/search', auth, authorize('saleManager'), async (req,res) => {
+  try {
+    const {limit, page,customerName, orderId} = req.query
+    const options={}
+
+    //Paging
+    if(limit) options.limit = parseInt(limit)
+    if(page) options.skip= parseInt(limit) * (parseInt(page) - 1);
+    
+    if(customerName) {
+      let name= new RegExp(customerName,'gi')
+      const order = await Order.find({receiverName: name},null, options)
+      return res.send(order)
+    }
+
+    if(orderId) {
+      const order = await Order.find({_id: new mongoose.Types.ObjectId(orderId)},null, options)
+      return res.send(order)
+    }
+
+    res.send()
+  } catch (error) {
+    res.status(500).send(error)
+  }
+})
+
+//GET /orders/saleManager/:id
+router.get("/saleManager/:id", auth, authorize("saleManager"), async (req, res) => {
+  try {
+    //Find and Check post exist:
+    const order = await Order.findById(req.params.id);
+    await order.populate({path:'owner'})
+
+    for(let i=0; i<order.items.length; i++){
+      await order.populate(`items.${i}.product`)
+    }
+
+    if (!order) return res.sendStatus(404);
+
+    res.send(order);
+  } catch (e) {
+    if (e.name === "CastError" && e.kind === "ObjectId")
+      return res.status(400).send({ error: "Invalid ID" });
+    res.status(500).send(e.message);
+  }
+});
+
+//PATCH /orders/saleManager/:id
+router.patch("/saleManager/:id", auth, authorize("saleManager"), async (req, res) => {
+  const updates = Object.keys(req.body);
+  const allowUpdateds = [
+    "status"
+  ];
+
+  if (!isValidUpdate(updates, allowUpdateds))
+    return res.status(400).send({ error: "Invalid updates" });
+
+  try {
+    const order = await Order.findByIdAndUpdate(req.params.id, req.body)
+
+    if (!order)
+      return res.sendStatus(404);
+
+    await order.save()
+
+    res.send(order);
+  } catch (e) {
+    if (e.name === "CastError" && e.kind === "ObjectId")
+      return res.status(400).send({ error: "Invalid ID" });
+    res.status(400).send(e.message);
+  }
+});
+
+
+        ///////////////Saler/////////////////
+//GET /orders/saler
+// Full Order list 
+// Pagination: limit, page
+// sort: sortedBy = orderDate_desc, customerName_asc, totalCost, status...
+// filter: from=...&to=...., status 
+  router.get("/saler", auth, authorize("saler"), async (req, res) => {
     try {
-      const orders = await Order.findById(req.params.id);
-
-      //Check order exist
-      if (!orders) return res.sendStatus(404);
-
-      res.send(orders);
+      const { from, to, status, sortedBy, limit, page } = req.query
+      const match={saler: req.user._id}
+      const sort = {}
+      const options = { sort }
+  
+      //filter
+      if (status) {
+        let allowedStatus= ["success", "cancelled", "submitted"]
+        const isValid = allowedStatus.includes(status)
+        if(isValid) {
+          match.status= status 
+        }
+      }
+  
+      if(from)
+        if(to) {
+          match.createdAt={$gte: Date.parse(from), 
+            $lt: Date.parse(to)}
+        }
+  
+  
+      //sort
+      if (sortedBy) {
+        const parts = sortedBy.split('_') 
+  
+        if(parts[0]==='orderDate') {
+          sort['createdAt']=(parts[1] === 'desc' ? -1 : 1) 
+          options.sort = sort
+        } else if(parts[0]==='customerName') {
+          sort['receiverName']=(parts[1] === 'desc' ? -1 : 1) 
+          options.sort = sort
+        } else {
+        sort[parts[0]]=(parts[1] === 'desc' ? -1 : 1) 
+        options.sort = sort
+        }
+      }
+  
+      //Paging
+      if (limit) options.limit = parseInt(limit)
+      if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
+  
+      const orders = await Order.find(match,null,options);
+  
+      const count = orders.length
+      
+      res.send({ orders, count });
     } catch (e) {
       if (e.name === "CastError" && e.kind === "ObjectId")
         return res.status(400).send({ error: "Invalid ID" });
       res.status(500).send(e);
     }
-  }
-);
+  });
+  
+  //Post /orders/saler/search
+  //search by orderId, customerName     ?orderId=...    customerName=...
+  //pagination          ?limit=...&page=...
+  router.post('/saler/search', auth, authorize('saler'), async (req,res) => {
+    try {
+      const {limit, page,customerName, orderId} = req.query
+      const options={}
+  
+      //Paging
+      if(limit) options.limit = parseInt(limit)
+      if(page) options.skip= parseInt(limit) * (parseInt(page) - 1);
+      
+      if(customerName) {
+        let name= new RegExp(customerName,'gi')
+        const order = await Order.find({receiverName: name, saler: req.user._id},null, options)
+        return res.send(order)
+      }
+  
+      if(orderId) {
+        const order = await Order.find({_id: new mongoose.Types.ObjectId(orderId), saler: req.user._id},null, options)
+        return res.send(order)
+      }
+  
+      res.send()
+    } catch (error) {
+      res.status(500).send(error)
+    }
+  })
 
-//PATCH /orders/status/:id
+//GET /orders/saler/:id
+router.get("/saler/:id", auth, authorize("saler"), async (req, res) => {
+  try {
+    //Find and Check post exist:
+    const order = await Order.findOne({_id:new mongoose.Types.ObjectId(req.params.id), saler: req.user._id});
+    if (!order) return res.sendStatus(404);
+
+    await order.populate({path:'owner'})
+
+    for(let i=0; i<order.items.length; i++){
+      await order.populate(`items.${i}.product`)
+    }
+
+
+    res.send(order);
+  } catch (e) {
+    if (e.name === "CastError" && e.kind === "ObjectId")
+      return res.status(400).send({ error: "Invalid ID" });
+    res.status(500).send(e.message);
+  }
+});
+
 //PATCH /orders/saler/:id
+router.patch("/saler/:id", auth, authorize("saler"), async (req, res) => {
+  const updates = Object.keys(req.body);
+  const allowUpdateds = [
+    "status"
+  ];
+
+  if (!isValidUpdate(updates, allowUpdateds))
+    return res.status(400).send({ error: "Invalid updates" });
+
+  try {
+    const order = await Order.findOneAndUpdate({_id:new mongoose.Types.ObjectId(req.params.id), saler: req.user._id}, req.body)
+
+    if (!order)
+      return res.sendStatus(404);
+
+    await order.save()
+
+    res.send(order);
+  } catch (e) {
+    if (e.name === "CastError" && e.kind === "ObjectId")
+      return res.status(400).send({ error: "Invalid ID" });
+    res.status(400).send(e.message);
+  }
+});
 
 module.exports = router;
