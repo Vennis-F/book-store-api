@@ -1,6 +1,8 @@
 const mongoose = require("mongoose")
 const uniqueValidator = require("mongoose-unique-validator")
 const validator = require("validator")
+const User = require("./user")
+const Customer = require("./customer")
 
 //SubSchema
 const imageSchema = mongoose.Schema({
@@ -86,7 +88,7 @@ const feedbackSchema = mongoose.Schema({
   product: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
-    ref: "Product",
+    ref: "product",
   }, // => productID
   user: {
     type: userInfoSchema,
@@ -99,14 +101,17 @@ const feedbackSchema = mongoose.Schema({
 })
 feedbackSchema.plugin(uniqueValidator)
 
-//middleware
-feedbackSchema.pre('save', function (next) {
-  try {
-    const feedbackUser = this.user
-    if (!feedbackUser.userAccount && !feedbackUser.userInfo)
-      throw new Error("Feedback's user information required")
-  } catch (error) {
-    console.log(error)
+feedbackSchema.pre('save', async function(next) {
+  const feedback= this
+  const accountUser = await User.findOne({email:feedback.user.email})
+  const customer= await Customer.findOne({email:feedback.user.email})
+  
+  if(accountUser) {
+    feedback.user.userAccount=accountUser._id
+  }
+
+  if(!accountUser && !customer) {
+    feedback.status=false
   }
 
   next()
