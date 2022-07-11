@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const uniqueValidator = require("mongoose-unique-validator");
 const validator = require("validator");
+const Role = require("./role");
+const User = require("./user");
 
 //SubSchema
 const orderItemSchema = mongoose.Schema({
@@ -138,6 +140,32 @@ orderSchema.pre("save", function (next) {
   }
   next();
 });
+
+orderSchema.pre('save', async function(next) {
+  try {
+    if(!this.saler) {
+      const salerRole = await Role.findOne({name:'saler'})
+
+      const salers= await User.find({role: salerRole._id})
+
+      let min=1000000
+      let minSaler= salers[0]
+      for (const sale of salers) {
+        const saler= await sale.populate({path: 'orders'})
+        if(min>saler.orders.length) {
+            min=saler.orders.length
+            minSaler=sale
+        }
+      
+      this.saler=minSaler
+      console.log(this.saler)  
+      }
+    }
+    next()
+  } catch (error) {
+    
+  }
+})
 
 //Model
 const Order = mongoose.model("Order", orderSchema);

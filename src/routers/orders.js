@@ -111,50 +111,115 @@ router.delete("/me/:id", auth, authorize("customer"), async (req, res) => {
   }
 });
 
-// //GET /orders/:id (get all by user id - saler id) - saleManager
-// router.get("/:id", auth, authorize("sale", "saleManager"), async (req, res) => {
-//   try {
-//     //Check idUser exist
-//     const user = await User.findById(req.params.id);
-//     if (!user) return res.status(404).send({ error: "Cannot find user" });
 
-//     const roleCode = req.role;
-//     let query = {};
-//     if ((await getRoleCode("sale")) === roleCode) {
-//       query = { saler: req.params.id };
-//     } else if ((await getRoleCode("saleManager")) === roleCode) {
-//       query = { owner: req.params.id };
-//     }
+      //////////////Sale Manager
 
-//     const orders = await Order.find(query);
-//     res.send(orders);
-//   } catch (e) {
-//     if (e.name === "CastError" && e.kind === "ObjectId")
-//       return res.status(400).send({ error: "Invalid ID" });
-//     res.status(500).send(e);
-//   }
-// });
+//GET /orders/saleManager
+// Full Order list 
+// Pagination: limit, page
+// sort: sortedBy = orderDate_desc, customerName_asc, totalCost, status...
+// filter: from=...&to=...., saleName, status 
+router.get("/saleManager", auth, authorize("saleManager"), async (req, res) => {
+  try {
+    const { from, to, status,saleName, sortedBy, limit, page } = req.query
+    const match={}
+    const sort = {}
+    const options = { sort }
 
-// //GET /orders/orderdetail/:id (get order detail by order id) - saleManager
-// router.get(
-//   "/orderdetail/:id",
-//   auth,
-//   authorize("sale", "saleManager"),
-//   async (req, res) => {
-//     try {
-//       const orders = await Order.findById(req.params.id);
+    //filter
+    if (status) {
+      let allowedStatus= ["success", "cancelled", "submitted"]
+      const isValid = allowedStatus.includes(status)
+      if(isValid) {
+        match.status= status 
+      }
+    }
 
-//       //Check order exist
-//       if (!orders) return res.sendStatus(404);
+    if(from)
+      if(to) {
+        match.from= Date.parse(from)
+        match.to= Date.parse(to)
+      }
 
-//       res.send(orders);
-//     } catch (e) {
-//       if (e.name === "CastError" && e.kind === "ObjectId")
-//         return res.status(400).send({ error: "Invalid ID" });
-//       res.status(500).send(e);
-//     }
-//   }
-// );
+
+    //sort
+    if (sortedBy) {
+      sort[parts[0]]=(parts[1] === 'desc' ? -1 : 1) 
+      options.sort = sort
+    }
+
+    //Paging
+    if (limit) options.limit = parseInt(limit)
+    if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
+
+    const orders = await Order.find(match,null,options).populate({ path: 'saler'});
+
+    // function compareAsc( a, b ) {
+    //   if ( a.product.title < b.product.title ){
+    //     return -1;
+    //   }
+    //   if ( a.product.title > b.product.title ){
+    //     return 1;
+    //   }
+    //   return 0;
+    // }
+
+    // function compareDesc( a, b ) {
+    //   if ( a.product.title < b.product.title ){
+    //     return 1;
+    //   }
+    //   if ( a.product.title > b.product.title ){
+    //     return -1;
+    //   }
+    //   return 0;
+    // }
+
+    // //sort product
+    // if(sort.productName) {
+    //   if(sort.productName===1)
+    //     feedbacks.sort(compareAsc)
+    //   else feedbacks.sort(compareDesc)
+    // }
+
+    // //product filter
+    // if(product) {
+    //   const sendFeedbacks=feedbacks.filter((feedback) => {
+    //     if(feedback.product.title.match(new RegExp(product))) 
+    //       return feedback
+    //   })
+    //   return res.send({ feedbacks:sendFeedbacks, count: sendFeedbacks.length });
+    // }
+
+    const count = await Order.countDocuments();
+    
+    res.send({ orders, count });
+  } catch (e) {
+    if (e.name === "CastError" && e.kind === "ObjectId")
+      return res.status(400).send({ error: "Invalid ID" });
+    res.status(500).send(e);
+  }
+});
+
+//GET /orders/orderdetail/:id (get order detail by order id) - saleManager
+router.get(
+  "/orderdetail/:id",
+  auth,
+  authorize("sale", "saleManager"),
+  async (req, res) => {
+    try {
+      const orders = await Order.findById(req.params.id);
+
+      //Check order exist
+      if (!orders) return res.sendStatus(404);
+
+      res.send(orders);
+    } catch (e) {
+      if (e.name === "CastError" && e.kind === "ObjectId")
+        return res.status(400).send({ error: "Invalid ID" });
+      res.status(500).send(e);
+    }
+  }
+);
 
 //PATCH /orders/status/:id
 //PATCH /orders/saler/:id
