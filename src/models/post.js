@@ -59,6 +59,7 @@ const postSchema = mongoose.Schema(
     author: {
       type: String,
       required: true,
+      default: '000000000000',
       trim: true
     }, //=> userId
   },

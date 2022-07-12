@@ -21,7 +21,7 @@ router.get("/", async (req, res) => {
     const cates = await Category.find({});
     res.send(cates);
   } catch (e) {
-    res.statu(500).send();
+    res.status(500).send();
   }
 });
 

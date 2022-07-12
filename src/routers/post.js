@@ -9,9 +9,10 @@ const { isValidUpdate } = require("../utils/valid");
 
 //POST /posts
 //this will auto update the author name
-router.post("/", async (req, res) => {
+router.post("/",auth, authorize('marketing'), async (req, res) => {
   const post = new Post(req.body);
   try {
+    post.author=req.user._id
     await post.save();
     res.sendStatus(201);
   } catch (e) {

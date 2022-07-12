@@ -502,8 +502,8 @@ router.get("/admin/getOne", auth, authorize("admin"), async (req, res) => {
   }
 });
 
-//PATCH /user/admin/:id
-router.patch("/admin/:id", auth, authorize("admin"), async (req, res) => {
+//PUT /user/admin/:id
+router.put("/admin/:id", auth, authorize("admin"), async (req, res) => {
   const updates = Object.keys(req.body);
   const allowUpdateds = [
     "status",
