@@ -213,18 +213,19 @@ router.post('/saleManager/search', auth, authorize('saleManager'), async (req,re
   }
 })
 
-//GET /orders/saleManager?orderID=...
-router.get("/saleManager", auth, authorize("saleManager"), async (req, res) => {
+//GET /orders/saleManager/getOne?orderId=...
+router.get("/saleManager/getOne", auth, authorize("saleManager"), async (req, res) => {
   try {
     //Find and Check post exist:
     const order = await Order.findById(req.query.orderId);
+    if (!order) return res.sendStatus(404);
+
     await order.populate({path:'owner'})
 
     for(let i=0; i<order.items.length; i++){
       await order.populate(`items.${i}.product`)
     }
 
-    if (!order) return res.sendStatus(404);
 
     res.send(order);
   } catch (e) {
