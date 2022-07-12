@@ -141,6 +141,25 @@ orderSchema.pre("save", function (next) {
   next();
 });
 
+orderSchema.pre("save", async function (next) {
+  try {
+    const order = this;
+    if(order.isModified('status')) {
+      if(order.status==='cancelled') {
+        for(const [index,item] of order.items.entries()) {
+          await order.populate({path:`items.${index}.product`})
+          item.product.quantity+=item.quantity
+          item.product.save()
+        }
+      }
+    }
+    next()
+  } catch (e) {
+    console.log(e);
+  }
+  next();
+});
+
 orderSchema.pre('save', async function(next) {
   try {
     if(!this.saler) {
