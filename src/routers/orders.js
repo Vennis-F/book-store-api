@@ -213,11 +213,11 @@ router.post('/saleManager/search', auth, authorize('saleManager'), async (req,re
   }
 })
 
-//GET /orders/saleManager/:id
-router.get("/saleManager/:id", auth, authorize("saleManager"), async (req, res) => {
+//GET /orders/saleManager?orderID=...
+router.get("/saleManager", auth, authorize("saleManager"), async (req, res) => {
   try {
     //Find and Check post exist:
-    const order = await Order.findById(req.params.id);
+    const order = await Order.findById(req.query.orderId);
     await order.populate({path:'owner'})
 
     for(let i=0; i<order.items.length; i++){
@@ -234,21 +234,39 @@ router.get("/saleManager/:id", auth, authorize("saleManager"), async (req, res) 
   }
 });
 
+//GET /orders/saleManager 
+//Get a list of active salers
+router.get("/saleManager/salers", auth, authorize("saleManager"), async (req, res) => {
+    try {
+      const salerId = await Role.findOne({name:'saler'})
+      console.log(salerId)
+      const salers = await User.find({role: salerId._id, status: true})
+      res.send(salers)
+    } catch (error) {
+      res.status(500).send()
+    }
+})
+
 //PATCH /orders/saleManager/:id
 router.patch("/saleManager/:id", auth, authorize("saleManager"), async (req, res) => {
   const updates = Object.keys(req.body);
   const allowUpdateds = [
-    "status"
+    "status",
+    "saler"     //saler ID
   ];
 
   if (!isValidUpdate(updates, allowUpdateds))
     return res.status(400).send({ error: "Invalid updates" });
 
   try {
-    const order = await Order.findByIdAndUpdate(req.params.id, req.body)
+    const order = await Order.findById(req.params.id)
 
     if (!order)
       return res.sendStatus(404);
+
+    updates.forEach((update) => {
+      order[update] = req.body[update]
+    })
 
     await order.save()
 
