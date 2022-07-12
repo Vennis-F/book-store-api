@@ -95,11 +95,6 @@ router.delete("/me/:id", auth, authorize("customer"), async (req, res) => {
       const productId = order.items[i].product._id;
       const quantity = order.items[i].quantity;
       const productDBQuantity = order.items[i].product.quantity;
-
-      //Update...
-      await Product.findByIdAndUpdate(productId, {
-        quantity: quantity + productDBQuantity,
-      });
     }
 
     //Change status to cancel
