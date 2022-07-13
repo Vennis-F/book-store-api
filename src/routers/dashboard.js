@@ -102,73 +102,78 @@ router.get("/marketing", auth, authorize('marketing'), async (req, res) => {
   }
 });
 
-//GET /dashboards/sale?from=...&to=...
+//GET /dashboards/saler?from=...&to=...
 //startDate & endDate => from & to
 
 //returns :
-//Top 5 Success Order gan day : object
-//Top 5 SP Ban chay : array[][]
-//Top 5 khach hang Vip: aray[][]
-//Top 5 feedback gan day: object
-//Top 5 khach hang gan day : objec (co the dieu chinh thoi gian) 
-router.get("/sale", auth, authorize(["saleManager","saler"]), async (req, res) => {
+//Top 5 Success Order gan day : aray[{}]
+//Top 5 Order gan day : array[{}]
+//Top Tong Tien thu duoc tron 7 ngay 
+// -  Co the chinh ngay ?from=.&to=...
+// -  Co the chinh status order ?status=...
+router.get("/saler", auth, authorize("saleManager","saler"), async (req, res) => {
   try {
-    const {from, to} = req.query
+    const {from, to, status} = req.query
     const match={}
 
     //Success Order gan day
-    const latestSuccessOrders = await Order.find({status:'success'}, null, {sort: {createdAt:-1}, limit:5});    
+    let latestSuccessOrders
+    let latestTotalOrders
+    let orders
 
-    // //San pham ban chay
-    // const orders= await Order.find({status:{$ne: 'cancelled' }})
+    //filter
+    if(from) {
+      if(to){ 
+        match.createdAt={$gte: Date.parse(from), 
+          $lt: Date.parse(to)}
+      }
+    }
+
+    if(req.role==="R04") {
+        latestSuccessOrders = await Order.find({status:'success', saler:req.user._id}, null, {sort: {createdAt:-1}, limit:5});   
+        latestTotalOrders = await Order.find({saler:req.user._id}, null, {sort: {createdAt:-1}, limit:5});  
+        match.status={$ne: 'cancelled' }
+        match.saler=req.user._id
+    } else {
+        latestSuccessOrders = await Order.find({status:'success'}, null, {sort: {createdAt:-1}, limit:5});    
+        latestTotalOrders = await Order.find({}, null, {sort: {createdAt:-1}, limit:5});  
+        match.status={$ne: 'cancelled' }
+    }
     
-    // const products={}
-    // for(const order of orders) {
-    //   let index=0
-    //   for (const item of order.items) {
-    //     await order.populate({path:`items.${index}.product`})
-    //     if(!products[item.product.title]) {
-    //       products[item.product.title]={quantity: item.quantity, _id: item.product._id}
-    //     } else {
-    //       products[item.product.title].quantity+=item.quantity
-    //     }
-    //     index++
-    //   }
-    // }
-    // const hotProducts= Object.entries(products).sort(([,a],[,b]) => b.quantity-a.quantity).slice(0,5)
+    //filter
+    if (status) {
+      let allowedStatus= ["success", "submitted"]
+      const isValid = allowedStatus.includes(status)
+      if(isValid) {
+        match.status= status 
+      }
+    }
+
+
+    orders= await Order.find(match)
+    const revenues=[]
+    const checkDates=[]
+    for(const order of orders) {
+      await order.populate({path:'saler'})
+      const date=order.updatedAt.toISOString().split('T')[0]
+      if(!checkDates.includes(date)) {
+        checkDates.push(date)
+        revenues.push({date: order.updatedAt ,total: order.totalCost})
+      } else {
+        let index =-1
+        revenues.forEach((revenue, i) => {
+          if (revenue.date.toISOString().split('T')[0]===date) {
+            index= i
+            return
+          }
+        })
+        revenues[index].total+=order.totalCost
+      }
+    }
     
-    // //Khach hang VIP
-    // const customers={}
-    // for(const order of orders) {
-    //   await order.populate('owner')
-
-    //   if(order.owner) {
-    //     const customer=order.owner
-    //     if(!customers[customer.fullName]) {
-    //       customers[customer.fullName]= order.totalCost
-    //     } else {
-    //       customers[customer.fullName]+= order.totalCost
-    //     }
-    //   }
-    // }
-    // const VipCustomers= Object.entries(customers).sort(([,a],[,b]) => b-a).slice(0,5)
-
-    // //Feedback gan day
-    // const latestFeedbacks = await Feedback.find({}, null, {sort: {createdAt:-1}, limit:5});
-
-    // //Customer gan day
-    // //Date Adjust
-    // if(from) {
-    //   if(to){ 
-    //     match.createdAt={$gte: Date.parse(from), 
-    //       $lt: Date.parse(to)}
-    //   }
-    // }
-    // const latestCustomers = await Customer.find(match,null,{sort: {createdAt:-1}, limit:5})
-
-    // res.send({latestPosts, hotProducts, VipCustomers, latestFeedbacks, latestCustomers});
-    res.send({latestSuccessOrders})
+    res.send({latestSuccessOrders, latestTotalOrders, revenues})
   } catch (e) {
+    console.log(e)
     res.status(500).send(e.message);
   }
 });
