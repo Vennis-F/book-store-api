@@ -5,6 +5,8 @@ const authorize =
   async (req, res, next) => {
     //Test
     // console.log(`User role: ${req.role}`);
+    // console.log(allowedRoles);
+    // console.log(await Role.findOne({ name: allowedRoles[0] }));
 
     //Check req.role exist
     if (!req?.role) return res.sendStatus(401);
