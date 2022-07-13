@@ -1,21 +1,33 @@
 const router = require("express").Router();
 const Post = require("../models/post");
+const User = require("../models/user");
 
 //customer & guest rout to check Blogs
 //GET /blogs
 //pagination  ?limit=...&page=...
 router.get("/", async (req, res) => {
   try {
-    const { limit, page } = req.query
-    const options = { sort: { createdAt: -1 } }
+    const { limit, page, featured } = req.query;
+    const options = { sort: { createdAt: -1 } };
+    const match = { status: true };
+
+    //Filter
+    if (featured) match.featured = featured === "true";
 
     //Pagination
-    if (limit) options.limit = parseInt(limit)
+    if (limit) options.limit = parseInt(limit);
     if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
 
-    const posts = await Post.find({status:true},null,options);
-    res.send(posts);
+    const posts = await Post.find(match, null, options).populate({
+      path: "author",
+    });
+    for (const post of posts) {
+      const author = await User.findById(post.author);
+      post.author = author.fullName;
+    }
 
+    const count = await Post.count(match);
+    res.send({ posts, count });
   } catch (e) {
     res.status(500).send();
   }
@@ -35,7 +47,5 @@ router.get("/:id", async (req, res) => {
     res.status(500).send(e);
   }
 });
-
-
 
 module.exports = router;
