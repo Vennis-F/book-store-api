@@ -194,7 +194,9 @@ router.get("/test", async (req, res) => {
   }
   const count = await Product.countDocuments();
   try {
-    const products = await Product.find(match, null, options);
+    const products = await Product.find(match, null, options).populate({
+      path: "category",
+    });
     res.send({ products, count });
   } catch (e) {
     res.status(500).send();

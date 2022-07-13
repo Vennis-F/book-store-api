@@ -9,10 +9,10 @@ const { isValidUpdate } = require("../utils/valid");
 
 //POST /posts
 //this will auto update the author name
-router.post("/",auth, authorize('marketing'), async (req, res) => {
+router.post("/", auth, authorize("marketing"), async (req, res) => {
   const post = new Post(req.body);
   try {
-    post.author=req.user._id
+    post.author = req.user._id;
     await post.save();
     res.sendStatus(201);
   } catch (e) {
@@ -20,46 +20,53 @@ router.post("/",auth, authorize('marketing'), async (req, res) => {
   }
 });
 
-//GET /posts  
-//Post lists  
+//GET /posts
+//Post lists
 //filter : category, author, status
 //category=...&author=...&status=...
 //sortable: title, category, author, featured, status
 //sortedBy=title_desc //sortedBy=status_asc
 router.get("/", async (req, res) => {
   try {
-    const { category, author, status, sortedBy, limit, page } = req.query
-    const match = {}
-    const sort = { createdAt: -1 }
-    const options = { sort }
+    const { category, author, status, sortedBy, limit, page } = req.query;
+    const match = {};
+    const sort = { createdAt: -1 };
+    const options = { sort };
 
     //filter
 
     if (status) {
-      match.status = (status === "true")
+      match.status = status === "true";
     }
 
     //sort
     if (sortedBy) {
-      const parts = sortedBy.split('_')       // param: sortedBy=auhor_desc 
-      sort[parts[0]] = (parts[1] === 'desc' ? -1 : 1)
-      options.sort = sort
+      const parts = sortedBy.split("_"); // param: sortedBy=auhor_desc
+      sort[parts[0]] = parts[1] === "desc" ? -1 : 1;
+      options.sort = sort;
     }
 
     //Paging
-    if (limit) options.limit = parseInt(limit)
+    if (limit) options.limit = parseInt(limit);
     if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
 
     // if no populate (author)
-    const posts = await Post.find(match, null, options).populate({ path: 'author', select: 'fullName' });
+    const posts = await Post.find(match, null, options);
+
     const count = await Post.countDocuments();
+    for (const post of posts) {
+      const author = await User.findById(post.author);
+      post.author = author.fullName;
+    }
+    console.log("_-------");
     await Promise.all(
-      posts.map((post) =>
-        post.populate({ path: "category", model: Category })
-      )
+      posts.map((post) => {
+        return post.populate({ path: "category", model: Category });
+      })
     );
     res.send({ posts, count });
   } catch (e) {
+    console.log(e);
     res.status(500).send(e);
   }
 });
@@ -67,23 +74,23 @@ router.get("/", async (req, res) => {
 //Post /posts/search
 //search by title     ?title=...
 //pagination          ?limit=...&page=...
-router.post('/search', auth, authorize('marketing'), async (req,res) => {
+router.post("/search", auth, authorize("marketing"), async (req, res) => {
   try {
-    const {limit, page} = req.query
-    const options={}
-    let title= new RegExp(req.query.title,'gi')
+    const { limit, page } = req.query;
+    const options = {};
+    let title = new RegExp(req.query.title, "gi");
 
     //Paging
-    if(limit) options.limit = parseInt(limit)
-    if(page) options.skip= parseInt(limit) * (parseInt(page) - 1);
+    if (limit) options.limit = parseInt(limit);
+    if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
 
-    const post = await Post.find({title},null, options)
+    const post = await Post.find({ title }, null, options);
 
-    res.send(post)
+    res.send(post);
   } catch (error) {
-    res.status(500).send(error)
+    res.status(500).send(error);
   }
-})
+});
 
 //GET /posts/:id
 router.get("/:id", auth, authorize("marketing"), async (req, res) => {
@@ -120,18 +127,18 @@ router.put("/", async (req, res) => {
     return res.status(400).send({ error: "Invalid updates" });
 
   try {
-    const post = await Post.findById(req.body.id)
+    const post = await Post.findById(req.body.id);
 
-    if (!post)
-      return res.sendStatus(404);
+    if (!post) return res.sendStatus(404);
 
     updates.forEach((update) => {
-      post[update] = req.body[update]
-    })
-    await post.save()
+      post[update] = req.body[update];
+    });
+    await post.save();
 
     res.send(post);
   } catch (e) {
+    console.log(e);
     if (e.name === "CastError" && e.kind === "ObjectId")
       return res.status(400).send({ error: "Invalid ID" });
     res.status(400).send(e.message);
@@ -139,17 +146,15 @@ router.put("/", async (req, res) => {
 });
 
 //DELETE /posts/:id
-router.delete('/:id', auth, authorize('marketing'), async (req, res) => {
+router.delete("/:id", auth, authorize("marketing"), async (req, res) => {
   try {
-    const post = await Post.findByIdAndDelete(req.params.id)
-    if (!post)
-      return res.status(404).send()
+    const post = await Post.findByIdAndDelete(req.params.id);
+    if (!post) return res.status(404).send();
 
-    res.send(post)
+    res.send(post);
   } catch (error) {
-    res.status(500).send(error)
+    res.status(500).send(error);
   }
-})
-
+});
 
 module.exports = router;
