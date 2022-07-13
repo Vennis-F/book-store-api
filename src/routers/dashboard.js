@@ -56,35 +56,46 @@ router.get("/marketing", auth, authorize('marketing'), async (req, res) => {
     //Thong so khach hang
     const customers=[]
     const checkCustomers=[]
+    const guest={email:'guest',spend:0}
     for(const order of orders) {
       await order.populate('owner')
-      console.log(order.owner._id)
-      // const email= order.owner.email
-      // if(order.owner) {
-      //   const customer=order.owner
-      //   if(!customers[customer.fullName]) {
-      //     customers[customer.fullName]= order.totalCost
-      //   } else {
-      //     customers[customer.fullName]+= order.totalCost
-      //   }
-      // }
-    }
+        const id=order.owner?._id.toString()
+        if(id) {
+          if(!checkCustomers.includes(id)) {
+            checkCustomers.push(id)
+            customers.push({email:order.owner.email ,spend: order.totalCost})
+          } else {
+            let index =-1
+            customers.forEach((customer, i) => {
+              if (customer.email===order.owner.email) {
+                 index= i
+                 return
+              }
+            })
+            customers[index].spend+=order.totalCost
+          }
+        }
+        else {
+          guest.spend+=order.totalCost
+        }
+    } 
+    customers.push(guest)  
     // const VipCustomers= Object.entries(customers).sort(([,a],[,b]) => b-a).slice(0,5)
 
-    // //Feedback gan day
-    // const latestFeedbacks = await Feedback.find({}, null, {sort: {createdAt:-1}, limit:5});
+    //Feedback gan day
+    const latestFeedbacks = await Feedback.find({}, null, {sort: {createdAt:-1}, limit:5});
 
-    // //Customer gan day
-    // //Date Adjust
-    // if(from) {
-    //   if(to){ 
-    //     match.createdAt={$gte: Date.parse(from), 
-    //       $lt: Date.parse(to)}
-    //   }
-    // }
-    // const latestCustomers = await Customer.find(match,null,{sort: {createdAt:-1}, limit:5})
+    //Customer gan day
+    //Date Adjust
+    if(from) {
+      if(to){ 
+        match.createdAt={$gte: Date.parse(from), 
+          $lt: Date.parse(to)}
+      }
+    }
+    const latestCustomers = await Customer.find(match,null,{sort: {createdAt:-1}, limit:5})
 
-    res.send({latestPosts,products})
+    res.send({latestPosts,products,customers, latestFeedbacks, latestCustomers})
     // res.send({latestPosts, products, VipCustomers, latestFeedbacks, latestCustomers});
   } catch (e) {
     res.status(500).send(e.message);
