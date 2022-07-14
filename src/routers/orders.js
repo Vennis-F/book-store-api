@@ -367,6 +367,7 @@ router.get("/saler", auth, authorize("saler"), async (req, res) => {
 //GET /orders/saler/search?search=...
 //search by orderId, customerName     
 //pagination          ?limit=...&page=...
+
 router.get('/saler/search', auth, authorize('saler'), async (req,res) => {
   try {
     let {limit, page, search} = req.query
