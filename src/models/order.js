@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const uniqueValidator = require("mongoose-unique-validator");
 const validator = require("validator");
+const Customer = require("./customer");
 const Role = require("./role");
 const User = require("./user");
 
@@ -159,6 +160,39 @@ orderSchema.pre("save", async function (next) {
   }
   next();
 });
+
+orderSchema.pre('save', async function(next) {
+  try {
+    const order=this
+    await order.populate('owner')
+    const owner = order.owner
+    
+    const customer= await Customer.findOne({email:owner.email})
+    console.log('custs: ',customer)
+    if(!customer) {
+      const customer= new Customer({
+        email: owner.email,
+        fullName: owner.fullName,
+        status: 'contact',
+        gender: owner.gender,
+        phone: owner.phone,
+        address: owner.address,
+        updatedBy: '000000000000'
+      })
+      await customer.save()
+    } else {
+      console.log('here right')
+      if(customer.status==='contact') {
+        customer.status='potential'
+        customer.updatedBy='000000000000'
+        await customer.save()
+      }
+    }
+    next()
+  } catch (error) {
+    console.log('rm: ',error)
+  }
+})
 
 orderSchema.pre('save', async function(next) {
   try {
