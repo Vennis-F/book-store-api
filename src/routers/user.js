@@ -309,10 +309,13 @@ router.get("/admin/roles", auth, authorize("admin"), async (req, res) => {
 //POST /user/admin
 router.post("/admin", auth, authorize("admin"), async (req, res) => {
   const user = new User(req.body);
+  console.log(user);
   try {
     await user.save();
     res.sendStatus(201);
   } catch (e) {
+    console.log(e);
+    console.log(e.message);
     res.status(500).send(e);
   }
 });
@@ -415,76 +418,84 @@ router.get("/admin", auth, authorize("admin"), async (req, res) => {
 });
 
 //GET /user/admin/search?search=...
-//search by fullName, email, phone 
+//search by fullName, email, phone
 //pagination          ?limit=...&page=...
-router.get('/admin/search', auth, authorize('admin'), async (req, res) => {
+router.post("/admin/search", auth, authorize("admin"), async (req, res) => {
   try {
-    let {
-      limit,
-      page,
-      search
-    } = req.query
-    const options = {}
+    let { limit, page, search } = req.body;
+    const options = {};
 
     //Paging
-    if(limit) options.limit = parseInt(limit) 
-      else{limit=5}
-    if(page) options.skip= parseInt(limit) * (parseInt(page) - 1)
-      else {
-        page=1
-        options.skip= parseInt(limit) * (parseInt(page) - 1)
-      }
+    if (limit) options.limit = parseInt(limit);
+    else {
+      limit = 5;
+    }
+    if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
+    else {
+      page = 1;
+      options.skip = parseInt(limit) * (parseInt(page) - 1);
+    }
 
     //search
-    const searchResult=[]
-    const checkById=[]
-    
-      let name = new RegExp(search, 'gi')
-      const users = await User.find({
-        fullName: name
-      }, null, options)
-      for(const user of users) {
-        if(checkById.length>=limit) break
-        if(!checkById.includes(user._id.toString())){
-          checkById.push(user._id.toString())
-          searchResult.push(user)
-        }
-      }
-  
+    const searchResult = [];
+    const checkById = [];
 
-    if(checkById<limit-1) {
-      let mail = new RegExp(search, 'gi')
-      const users = await User.find({
-        email:mail
-      }, null, options)
-      for(const user of users) {
-        if(checkById.length>=limit) break
-        if(!checkById.includes(user._id.toString())){
-          checkById.push(user._id.toString())
-          searchResult.push(user)
+    let name = new RegExp(search, "gi");
+    const users = await User.find(
+      {
+        fullName: name,
+      },
+      null,
+      options
+    );
+    for (const user of users) {
+      if (checkById.length >= limit) break;
+      if (!checkById.includes(user._id.toString())) {
+        checkById.push(user._id.toString());
+        searchResult.push(user);
+      }
+    }
+
+    if (checkById < limit - 1) {
+      let mail = new RegExp(search, "gi");
+      const users = await User.find(
+        {
+          email: mail,
+        },
+        null,
+        options
+      );
+      for (const user of users) {
+        if (checkById.length >= limit) break;
+        if (!checkById.includes(user._id.toString())) {
+          checkById.push(user._id.toString());
+          searchResult.push(user);
         }
       }
     }
 
-    if(checkById<limit-1) {
-      let mobile = new RegExp(search, 'gi')
-      const users = await User.find({
-        phone:mobile
-      }, null, options)
-      for(let user of users) {
-        if(checkById.length>=limit) break
-        if(!checkById.includes(user._id.toString())){
-          checkById.push(user._id.toString())
-          searchResult.push(user)
+    if (checkById < limit - 1) {
+      let mobile = new RegExp(search, "gi");
+      const users = await User.find(
+        {
+          phone: mobile,
+        },
+        null,
+        options
+      );
+      for (let user of users) {
+        if (checkById.length >= limit) break;
+        if (!checkById.includes(user._id.toString())) {
+          checkById.push(user._id.toString());
+          searchResult.push(user);
         }
       }
     }
 
-
-    res.send(searchResult)
+    res.send(searchResult);
   } catch (error) {
-    console.log(error)
-    res.status(500).send(error)
+    console.log(error);
+    res.status(500).send(error);
   }
 });
 

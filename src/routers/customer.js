@@ -66,73 +66,70 @@ router.get("/", auth, authorize("marketing"), async (req, res) => {
 });
 
 //GET /customers/search/?search=...
-//search by fullName     
-//search by email       
-//search by phone        
+//search by fullName
+//search by email
+//search by phone
 //Pagination:            ?limit=...&page=...
-router.get('/search', auth, authorize('marketing'), async (req,res) => {
-  let {search, limit, page} = req.query
-  const options={}
+router.post("/search", auth, authorize("marketing"), async (req, res) => {
+  let { search, limit, page } = req.body;
+  const options = {};
 
   try {
-
     //Paging
-    if(limit) options.limit = parseInt(limit) 
-      else{limit=5}
-    if(page) options.skip= parseInt(limit) * (parseInt(page) - 1)
-      else {
-        page=1
-        options.skip= parseInt(limit) * (parseInt(page) - 1)
-      }
+    if (limit) options.limit = parseInt(limit);
+    else {
+      limit = 5;
+    }
+    if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
+    else {
+      page = 1;
+      options.skip = parseInt(limit) * (parseInt(page) - 1);
+    }
 
-    const searchResult=[]
-    const checkByEmail=[]
+    const searchResult = [];
+    const checkByEmail = [];
 
-    let fullName= new RegExp(search,'gi')
-    const customers = await Customer.find({fullName},null,options)
-    for(const customer of customers) {
-      customer.history=undefined   
-      if(checkByEmail.length>=parseInt.limit) break
-      if(!checkByEmail.includes(customer.email)) {
-        checkByEmail.push(customer.email)
-        searchResult.push(customer)
+    let fullName = new RegExp(search, "gi");
+    const customers = await Customer.find({ fullName }, null, options);
+    for (const customer of customers) {
+      customer.history = undefined;
+      if (checkByEmail.length >= parseInt.limit) break;
+      if (!checkByEmail.includes(customer.email)) {
+        checkByEmail.push(customer.email);
+        searchResult.push(customer);
       }
     }
 
-    if(checkByEmail.length<limit-1){
-      let email= new RegExp(search,'gi')
-      const customers = await Customer.find({email},null,options)
-      for(const customer of customers) {
-        customer.history=undefined 
-        if(checkByEmail.length>=parseInt.limit) break
-        if(!checkByEmail.includes(customer.email)) {
-          checkByEmail.push(customer.email)
-          searchResult.push(customer)  
-        }
-     } 
-    }
-
-
-
-    if(checkByEmail.length<limit-1) {
-      let phone= new RegExp(search,'gi')
-      const customers = await Customer.find({phone},null,options)
-      for(const customer of customers) {
-        customer.history=undefined   
-        if(checkByEmail.length>=parseInt.limit) break
-        if(!checkByEmail.includes(customer.email)) {
-          checkByEmail.push(customer.email)
-          searchResult.push(customer)  
+    if (checkByEmail.length < limit - 1) {
+      let email = new RegExp(search, "gi");
+      const customers = await Customer.find({ email }, null, options);
+      for (const customer of customers) {
+        customer.history = undefined;
+        if (checkByEmail.length >= parseInt.limit) break;
+        if (!checkByEmail.includes(customer.email)) {
+          checkByEmail.push(customer.email);
+          searchResult.push(customer);
         }
       }
     }
 
-    res.send(searchResult)
-    
+    if (checkByEmail.length < limit - 1) {
+      let phone = new RegExp(search, "gi");
+      const customers = await Customer.find({ phone }, null, options);
+      for (const customer of customers) {
+        customer.history = undefined;
+        if (checkByEmail.length >= parseInt.limit) break;
+        if (!checkByEmail.includes(customer.email)) {
+          checkByEmail.push(customer.email);
+          searchResult.push(customer);
+        }
+      }
+    }
+
+    res.send(searchResult);
   } catch (error) {
-    console.log(error)  
-    res.status(500).send(error)
-
+    console.log(error);
+    res.status(500).send(error);
   }
 });
 
