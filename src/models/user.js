@@ -123,6 +123,18 @@ userSchema.plugin(uniqueValidator);
 
 //   return userObject
 // }
+
+userSchema.methods.toJSON= function() {
+  const user = this
+  const userProfile = user.toObject()
+
+  delete userProfile.password
+  delete userProfile.tokens
+  delete userProfile.avatar
+
+  return userProfile
+}
+
 userSchema.methods.generateAuthToken = async function () {
   const user = this;
   const token = await jwt.sign(
