@@ -59,32 +59,53 @@ router.post("/marketing/",auth, authorize('marketing'), async (req, res) => {
 });
 
 
-//POST /sliders/marketing/search
-// search:  ?title=...    ?backlink=...
+//GET /sliders/marketing/search?search=...
+// search: title, backlink
 //pagination:   ?limit=...&page=...
-router.post("/marketing/search",auth, authorize('marketing'),async (req, res) => {
+router.get("/marketing/search",auth, authorize('marketing'),async (req, res) => {
   try {
-    const {title, backlink, limit, page} =req.query
+    let {search, limit, page} =req.query
     const options= {}
 
-    //pagination
-    if(limit) options.limit = parseInt(limit)
-    if(page) options.skip= parseInt(limit) * (parseInt(page) - 1);
+    //Paging
+    if(limit) options.limit = parseInt(limit) 
+      else{limit=5}
+    if(page) options.skip= parseInt(limit) * (parseInt(page) - 1)
+      else {
+        page=1
+        options.skip= parseInt(limit) * (parseInt(page) - 1)
+      }
 
     //search
-    if(title){
-      const sliders = await Slider.find({title: new RegExp(title)},null,options)
-      return res.send(sliders)
+    const searchResult=[]
+    const checkById=[]
+
+    const title= new RegExp(search)
+    const sliders = await Slider.find({title: title},null,options)
+    for(const slider of sliders) {
+      if(checkById.length>=limit) break
+      if(!checkById.includes(slider._id.toString())){
+        checkById.push(slider._id.toString())
+        searchResult.push(slider)
+      }
     }
 
-    if(backlink){
-      const sliders = await Slider.find({backlink: new RegExp(backlink)},null,options)
-      return res.send(sliders)
+    if(checkById<limit-1){
+      const backlink= new RegExp(search)
+      const sliders = await Slider.find({backlink},null,options)
+      for(const slider of sliders) {
+        if(checkById.length>=limit) break
+        if(!checkById.includes(slider._id.toString())){
+          checkById.push(slider._id.toString())
+          searchResult.push(slider)
+        }
+      }
     }
 
-    res.send()
+    res.send(searchResult)
 
   } catch (error) {
+    console.log(error)
     return res.status(500).send()
   }
 })
