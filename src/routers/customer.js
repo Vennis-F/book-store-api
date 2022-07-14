@@ -70,8 +70,8 @@ router.get("/", auth, authorize("marketing"), async (req, res) => {
 //search by email       
 //search by phone        
 //Pagination:            ?limit=...&page=...
-router.get('/search', auth, authorize('marketing'), async (req,res) => {
-  let {search, limit, page} = req.query
+router.post('/search', auth, authorize('marketing'), async (req,res) => {
+  let {search, limit, page} = req.body
   const options={}
 
   try {

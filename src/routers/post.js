@@ -74,9 +74,9 @@ router.get("/", async (req, res) => {
 //GET /posts/search?search=...
 //search by title     
 //pagination          ?limit=...&page=...
-router.get('/search', auth, authorize('marketing'), async (req,res) => {
+router.post('/search', auth, authorize('marketing'), async (req,res) => {
   try {
-    let {limit, page, search} = req.query
+    let {limit, page, search} = req.body
     const options={}
     let title= new RegExp(search,'gi')
 

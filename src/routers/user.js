@@ -419,13 +419,13 @@ router.get("/admin", auth, authorize("admin"), async (req, res) => {
 //GET /user/admin/search?search=...
 //search by fullName, email, phone 
 //pagination          ?limit=...&page=...
-router.get('/admin/search', auth, authorize('admin'), async (req, res) => {
+router.post('/admin/search', auth, authorize('admin'), async (req, res) => {
   try {
     let {
       limit,
       page,
       search
-    } = req.query
+    } = req.body
     const options = {}
 
     //Paging

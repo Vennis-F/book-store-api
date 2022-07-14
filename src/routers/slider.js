@@ -60,9 +60,9 @@ router.get("/marketing/", auth, authorize("marketing"), async (req, res) => {
 //GET /sliders/marketing/search?search=...
 // search: title, backlink
 //pagination:   ?limit=...&page=...
-router.get("/marketing/search",auth, authorize('marketing'),async (req, res) => {
+router.post("/marketing/search",auth, authorize('marketing'),async (req, res) => {
   try {
-    let {search, limit, page} =req.query
+    let {search, limit, page} =req.body
     const options= {}
 
     //Paging

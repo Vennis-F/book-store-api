@@ -164,11 +164,19 @@ orderSchema.pre("save", async function (next) {
 orderSchema.pre('save', async function(next) {
   try {
     const order=this
+    if(order.isModified('status')&& order.status!=='success') {
     await order.populate('owner')
-    const owner = order.owner
-    
+    let owner = order.owner
+    if(!owner) {
+      owner= {
+        email: order.email,
+        fullName: order.receiverName,
+        gender: order.gender,
+        phone: order.phone,
+        address: order.address
+      }
+    }
     const customer= await Customer.findOne({email:owner.email})
-    console.log('custs: ',customer)
     if(!customer) {
       const customer= new Customer({
         email: owner.email,
@@ -181,13 +189,13 @@ orderSchema.pre('save', async function(next) {
       })
       await customer.save()
     } else {
-      console.log('here right')
       if(customer.status==='contact') {
         customer.status='potential'
         customer.updatedBy='000000000000'
         await customer.save()
       }
     }
+  }
     next()
   } catch (error) {
     console.log('rm: ',error)
@@ -217,6 +225,30 @@ orderSchema.pre('save', async function(next) {
     next()
   } catch (error) {
     
+  }
+})
+
+orderSchema.pre('save', async function(next) {
+  try {
+    const order=this
+    if(order.isModified('status')&& order.status==='success') {
+      await order.populate('owner')
+      const owner = order.owner
+      if(owner) {
+        const customer = await Customer.findOne({email:owner.email})
+        customer.status='customer' 
+        await customer.save()
+      } else {
+        console.log('here')
+        const customer = await Customer.findOne({email:order.email})
+        console.log('check: ',customer)
+          customer.status='customer'
+          await customer.save()
+      }
+    }
+    next()
+  } catch (error) {
+    console.log(error)
   }
 })
 
