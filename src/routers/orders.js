@@ -179,30 +179,49 @@ router.get("/saleManager", auth, authorize("saleManager"), async (req, res) => {
   }
 });
 
-//Post /orders/saleManager/search
-//search by orderId, customerName     ?orderId=...    customerName=...
+//GET /orders/saleManager/search?search=...
+//search by orderId, customerName     
 //pagination          ?limit=...&page=...
-router.post('/saleManager/search', auth, authorize('saleManager'), async (req,res) => {
+router.get('/saleManager/search', auth, authorize('saleManager'), async (req,res) => {
   try {
-    const {limit, page,customerName, orderId} = req.query
+    let {limit, page, search} = req.query
     const options={}
 
     //Paging
-    if(limit) options.limit = parseInt(limit)
-    if(page) options.skip= parseInt(limit) * (parseInt(page) - 1);
+    if(limit) options.limit = parseInt(limit) 
+      else{limit=5}
+    if(page) options.skip= parseInt(limit) * (parseInt(page) - 1)
+      else {
+        page=1
+        options.skip= parseInt(limit) * (parseInt(page) - 1)
+      }
+
+    const searchResult=[]
+    const checkById=[]  
     
-    if(customerName) {
-      let name= new RegExp(customerName,'gi')
-      const order = await Order.find({receiverName: name},null, options)
-      return res.send(order)
+    //search
+    let name= new RegExp(search,'gi')
+    const orders = await Order.find({receiverName: name},null, options)
+    for(const order of orders) {
+      if(checkById.length>=limit) break
+      if(!checkById.includes(order._id.toString())){
+        checkById.push(order._id.toString())
+        searchResult.push(order)
+      }
     }
 
-    if(orderId) {
-      const order = await Order.find({_id: new mongoose.Types.ObjectId(orderId)},null, options)
-      return res.send(order)
+    if(checkById<limit-1&&(search.length===12||search.length===24)) {
+      const orders = await Order.find({_id: new mongoose.Types.ObjectId(search)},null, options)
+      for(const order of orders) {
+        if(checkById.length>=limit) break
+        if(!checkById.includes(order._id.toString())){
+          checkById.push(order._id.toString())
+          searchResult.push(order)
+        }
+      }
     }
 
-    res.send()
+    res.send(searchResult)
   } catch (error) {
     res.status(500).send(error)
   }
@@ -336,31 +355,51 @@ router.patch("/saleManager/:id", auth, authorize("saleManager"), async (req, res
     }
   });
   
-  //Post /orders/saler/search
-  //search by orderId, customerName     ?orderId=...    customerName=...
+  //GET /orders/saler/search?search=...
+  //search by orderId, customerName     
   //pagination          ?limit=...&page=...
-  router.post('/saler/search', auth, authorize('saler'), async (req,res) => {
+  router.get('/saler/search', auth, authorize('saler'), async (req,res) => {
     try {
-      const {limit, page,customerName, orderId} = req.query
+      let {limit, page, search} = req.query
       const options={}
   
-      //Paging
-      if(limit) options.limit = parseInt(limit)
-      if(page) options.skip= parseInt(limit) * (parseInt(page) - 1);
-      
-      if(customerName) {
-        let name= new RegExp(customerName,'gi')
-        const order = await Order.find({receiverName: name, saler: req.user._id},null, options)
-        return res.send(order)
+    //Paging
+    if(limit) options.limit = parseInt(limit) 
+     else{limit=5}
+    if(page) options.skip= parseInt(limit) * (parseInt(page) - 1)
+      else {
+        page=1
+        options.skip= parseInt(limit) * (parseInt(page) - 1)
       }
-  
-      if(orderId) {
-        const order = await Order.find({_id: new mongoose.Types.ObjectId(orderId), saler: req.user._id},null, options)
-        return res.send(order)
+
+    const searchResult=[]
+    const checkById=[]   
+
+    //search
+    let name= new RegExp(search,'gi')
+    const orders = await Order.find({receiverName: name, saler: req.user._id},null, options)
+    for(const order of orders) {
+      if(checkById.length>=limit) break
+      if(!checkById.includes(order._id.toString())){
+        checkById.push(order._id.toString())
+        searchResult.push(order)
       }
+    }
+    
+    if(checkById<limit-1&&(search.length===12||search.length===24)) {
+      const orders = await Order.find({_id: new mongoose.Types.ObjectId(search), saler: req.user._id},null, options)
+      for(const order of orders) {
+        if(checkById.length>=limit) break
+        if(!checkById.includes(order._id.toString())){
+          checkById.push(order._id.toString())
+          searchResult.push(order)
+        }
+      }
+    }
   
-      res.send()
+    res.send(searchResult)
     } catch (error) {
+      console.log(error)
       res.status(500).send(error)
     }
   })

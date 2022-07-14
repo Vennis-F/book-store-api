@@ -214,7 +214,7 @@ router.get("/marketing",auth,authorize('marketing'), async (req, res) => {
   }
 });
 
-//Post /feedbacks/marketing/search?search=...
+//GET /feedbacks/marketing/search?search=...
 //search by fullName, content     
 //pagination          ?limit=...&page=...
 router.get('/marketing/search', auth, authorize('marketing'), async (req,res) => {
@@ -224,13 +224,12 @@ router.get('/marketing/search', auth, authorize('marketing'), async (req,res) =>
     
     //Paging
     if(limit) options.limit = parseInt(limit) 
-    else{limit=5}
-
+     else{limit=5}
     if(page) options.skip= parseInt(limit) * (parseInt(page) - 1)
-    else {
-      page=1
-      options.skip= parseInt(limit) * (parseInt(page) - 1)
-    }
+      else {
+        page=1
+        options.skip= parseInt(limit) * (parseInt(page) - 1)
+      }
 
     const searchResult=[]
     const checkById=[]

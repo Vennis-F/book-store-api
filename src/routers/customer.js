@@ -64,7 +64,7 @@ router.get("/", auth, authorize("marketing"), async (req, res) => {
   }
 });
 
-//Post /customers/search/?search=...
+//GET /customers/search/?search=...
 //search by fullName     
 //search by email       
 //search by phone        
@@ -76,13 +76,12 @@ router.get('/search', auth, authorize('marketing'), async (req,res) => {
 
     //Paging
     if(limit) options.limit = parseInt(limit) 
-    else{limit=5}
-
+      else{limit=5}
     if(page) options.skip= parseInt(limit) * (parseInt(page) - 1)
-    else {
-      page=1
-      options.skip= parseInt(limit) * (parseInt(page) - 1)
-    }
+      else {
+        page=1
+        options.skip= parseInt(limit) * (parseInt(page) - 1)
+      }
 
     const searchResult=[]
     const checkByEmail=[]
