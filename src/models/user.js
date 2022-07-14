@@ -143,7 +143,6 @@ userSchema.methods.generateCustomer = async function()  {
   if(user.role.name==='customer') {
     const customerCheck = await Customer.findOne({email:user.email})
     if(customerCheck) return null
-    console.log('pass !')
     const customer= new Customer({
       email: user.email,
       fullName: user.fullName,
@@ -154,7 +153,6 @@ userSchema.methods.generateCustomer = async function()  {
       updatedBy: '000000000000'
     })
     await customer.save()
-    console.log(customer,'- customer here')
     return customer
   }
   return null
