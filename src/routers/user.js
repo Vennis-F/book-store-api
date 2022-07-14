@@ -414,60 +414,77 @@ router.get("/admin", auth, authorize("admin"), async (req, res) => {
   }
 });
 
-//Post /user/admin/search
-//search by fullName, email, phone    ?phone=...
+//GET /user/admin/search?search=...
+//search by fullName, email, phone 
 //pagination          ?limit=...&page=...
-router.post("/admin/search", auth, authorize("admin"), async (req, res) => {
+router.get('/admin/search', auth, authorize('admin'), async (req, res) => {
   try {
-    const { limit, page, fullName, email, phone } = req.query;
-    const options = {};
+    let {
+      limit,
+      page,
+      search
+    } = req.query
+    const options = {}
 
     //Paging
-    if (limit) options.limit = parseInt(limit);
-    if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
+    if(limit) options.limit = parseInt(limit) 
+      else{limit=5}
+    if(page) options.skip= parseInt(limit) * (parseInt(page) - 1)
+      else {
+        page=1
+        options.skip= parseInt(limit) * (parseInt(page) - 1)
+      }
 
-    if (fullName) {
-      let name = new RegExp(fullName, "gi");
-      const user = await User.find(
-        {
-          fullName: name,
-        },
-        null,
-        options
-      );
+    //search
+    const searchResult=[]
+    const checkById=[]
+    
+      let name = new RegExp(search, 'gi')
+      const users = await User.find({
+        fullName: name
+      }, null, options)
+      for(const user of users) {
+        if(checkById.length>=limit) break
+        if(!checkById.includes(user._id.toString())){
+          checkById.push(user._id.toString())
+          searchResult.push(user)
+        }
+      }
+  
 
-      return res.send(user);
+    if(checkById<limit-1) {
+      let mail = new RegExp(search, 'gi')
+      const users = await User.find({
+        email:mail
+      }, null, options)
+      for(const user of users) {
+        if(checkById.length>=limit) break
+        if(!checkById.includes(user._id.toString())){
+          checkById.push(user._id.toString())
+          searchResult.push(user)
+        }
+      }
     }
 
-    if (email) {
-      let mail = new RegExp(email, "gi");
-      const user = await User.find(
-        {
-          email: mail,
-        },
-        null,
-        options
-      );
-
-      return res.send(user);
+    if(checkById<limit-1) {
+      let mobile = new RegExp(search, 'gi')
+      const users = await User.find({
+        phone:mobile
+      }, null, options)
+      for(let user of users) {
+        if(checkById.length>=limit) break
+        if(!checkById.includes(user._id.toString())){
+          checkById.push(user._id.toString())
+          searchResult.push(user)
+        }
+      }
     }
 
-    if (phone) {
-      let mobile = new RegExp(phone, "gi");
-      const user = await User.find(
-        {
-          phone: mobile,
-        },
-        null,
-        options
-      );
 
-      return res.send(user);
-    }
-
-    res.send();
+    res.send(searchResult)
   } catch (error) {
-    res.status(500).send(error);
+    console.log(error)
+    res.status(500).send(error)
   }
 });
 

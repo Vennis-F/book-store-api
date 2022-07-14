@@ -65,50 +65,74 @@ router.get("/", auth, authorize("marketing"), async (req, res) => {
   }
 });
 
-//Post /customers/search/
-//search by fullName     ?fullname=...
-//search by email        ?email=...
-//search by phone        ?phone=...
+//GET /customers/search/?search=...
+//search by fullName     
+//search by email       
+//search by phone        
 //Pagination:            ?limit=...&page=...
-router.post("/search", auth, authorize("marketing"), async (req, res) => {
-  const { fullName, email, phone, limit, page } = req.query;
-  const options = {};
+router.get('/search', auth, authorize('marketing'), async (req,res) => {
+  let {search, limit, page} = req.query
+  const options={}
+
   try {
+
     //Paging
-    if (limit) options.limit = parseInt(limit);
-    if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
-
-    if (fullName) {
-      let fullName = new RegExp(fullName, "gi");
-      const customers = await Customer.find({ fullName }, null, options);
-      for (const customer of customers) {
-        customer.history = undefined;
-      }
-      return res.send(customers);
-    }
-
-    if (email) {
-      let email = new RegExp(email, "gi");
-      const customers = await Customer.find({ email }, null, options);
-      for (const customer of customers) {
-        customer.history = undefined;
+    if(limit) options.limit = parseInt(limit) 
+      else{limit=5}
+    if(page) options.skip= parseInt(limit) * (parseInt(page) - 1)
+      else {
+        page=1
+        options.skip= parseInt(limit) * (parseInt(page) - 1)
       }
 
-      return res.send(customers);
-    }
+    const searchResult=[]
+    const checkByEmail=[]
 
-    if (phone) {
-      let phone = new RegExp(phone, "gi");
-      const customers = await Customer.find({ phone }, null, options);
-      for (const customer of customers) {
-        customer.history = undefined;
+    let fullName= new RegExp(search,'gi')
+    const customers = await Customer.find({fullName},null,options)
+    for(const customer of customers) {
+      customer.history=undefined   
+      if(checkByEmail.length>=parseInt.limit) break
+      if(!checkByEmail.includes(customer.email)) {
+        checkByEmail.push(customer.email)
+        searchResult.push(customer)
       }
-      return res.send(customers);
     }
 
-    res.send();
+    if(checkByEmail.length<limit-1){
+      let email= new RegExp(search,'gi')
+      const customers = await Customer.find({email},null,options)
+      for(const customer of customers) {
+        customer.history=undefined 
+        if(checkByEmail.length>=parseInt.limit) break
+        if(!checkByEmail.includes(customer.email)) {
+          checkByEmail.push(customer.email)
+          searchResult.push(customer)  
+        }
+     } 
+    }
+
+
+
+    if(checkByEmail.length<limit-1) {
+      let phone= new RegExp(search,'gi')
+      const customers = await Customer.find({phone},null,options)
+      for(const customer of customers) {
+        customer.history=undefined   
+        if(checkByEmail.length>=parseInt.limit) break
+        if(!checkByEmail.includes(customer.email)) {
+          checkByEmail.push(customer.email)
+          searchResult.push(customer)  
+        }
+      }
+    }
+
+    res.send(searchResult)
+    
   } catch (error) {
-    res.status(500).send(error);
+    console.log(error)  
+    res.status(500).send(error)
+
   }
 });
 

@@ -71,24 +71,31 @@ router.get("/", async (req, res) => {
   }
 });
 
-//Post /posts/search
-//search by title     ?title=...
+//GET /posts/search?search=...
+//search by title     
 //pagination          ?limit=...&page=...
-router.post("/search", auth, authorize("marketing"), async (req, res) => {
+router.get('/search', auth, authorize('marketing'), async (req,res) => {
   try {
-    const { limit, page } = req.query;
-    const options = {};
-    let title = new RegExp(req.query.title, "gi");
+    let {limit, page, search} = req.query
+    const options={}
+    let title= new RegExp(search,'gi')
 
     //Paging
-    if (limit) options.limit = parseInt(limit);
-    if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
+    if(limit) options.limit = parseInt(limit) 
+     else{limit=5}
+    if(page) options.skip= parseInt(limit) * (parseInt(page) - 1)
+      else {
+        page=1
+        options.skip= parseInt(limit) * (parseInt(page) - 1)
+      }
+
 
     const post = await Post.find({ title }, null, options);
 
     res.send(post);
   } catch (error) {
-    res.status(500).send(error);
+    console.log(error)
+    res.status(500).send(error)
   }
 });
 
