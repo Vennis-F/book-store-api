@@ -7,12 +7,13 @@ const User = require("../models/user");
 //pagination  ?limit=...&page=...
 router.get("/", async (req, res) => {
   try {
-    const { limit, page, featured } = req.query;
+    const { limit, page, featured, status } = req.query;
     const options = { sort: { createdAt: -1 } };
     const match = { status: true };
 
     //Filter
     if (featured) match.featured = featured === "true";
+    if (status) match.status = status === "true";
 
     //Pagination
     if (limit) options.limit = parseInt(limit);
