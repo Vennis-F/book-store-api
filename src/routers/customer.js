@@ -87,7 +87,6 @@ router.get('/search', auth, authorize('marketing'), async (req,res) => {
     const searchResult=[]
     const checkByEmail=[]
 
-
     let fullName= new RegExp(search,'gi')
     const customers = await Customer.find({fullName},null,options)
     for(const customer of customers) {
@@ -99,7 +98,7 @@ router.get('/search', auth, authorize('marketing'), async (req,res) => {
       }
     }
 
-    if(checkByEmail.length<limit){
+    if(checkByEmail.length<limit-1){
       let email= new RegExp(search,'gi')
       const customers = await Customer.find({email},null,options)
       for(const customer of customers) {
@@ -114,7 +113,7 @@ router.get('/search', auth, authorize('marketing'), async (req,res) => {
 
 
 
-    if(checkByEmail.length<limit) {
+    if(checkByEmail.length<limit-1) {
       let phone= new RegExp(search,'gi')
       const customers = await Customer.find({phone},null,options)
       for(const customer of customers) {

@@ -214,31 +214,50 @@ router.get("/marketing",auth,authorize('marketing'), async (req, res) => {
   }
 });
 
-//Post /feedbacks/marketing/search
-//search by fullName, content     ?content=...  ?fullName=...
+//Post /feedbacks/marketing/search?search=...
+//search by fullName, content     
 //pagination          ?limit=...&page=...
-router.post('/marketing/search', auth, authorize('marketing'), async (req,res) => {
+router.get('/marketing/search', auth, authorize('marketing'), async (req,res) => {
   try {
-    const {limit, page, fullName, content} = req.query
+    let {limit, page, search} = req.query
     const options={}
     
     //Paging
-    if(limit) options.limit = parseInt(limit)
-    if(page) options.skip= parseInt(limit) * (parseInt(page) - 1);
+    if(limit) options.limit = parseInt(limit) 
+    else{limit=5}
+
+    if(page) options.skip= parseInt(limit) * (parseInt(page) - 1)
+    else {
+      page=1
+      options.skip= parseInt(limit) * (parseInt(page) - 1)
+    }
+
+    const searchResult=[]
+    const checkById=[]
 
     //search
-    if(fullName) {
-      const name= new RegExp(fullName,'gi')
+      const name= new RegExp(search,'gi')
       const feedbacks = await Feedback.find({'user.name':name},null, options)
-      return res.send(feedbacks)
-    }
-    
-    if(content) {
-      const feedbacks = await Feedback.find({content:new RegExp(content,'gi')},null, options)
-      return res.send(feedbacks)
+      for(const feedback of feedbacks) {
+        if(checkById.length>=limit) break
+        if(!checkById.includes(feedback._id.toString())){
+          checkById.push(feedback._id.toString())
+          searchResult.push(feedback)
+        }
+      }
+      
+    if(checkById<limit-1) {
+      const feedbacks = await Feedback.find({content:new RegExp(search,'gi')},null, options)
+      for(const feedback of feedbacks) {
+        if(checkById.length>=limit) break
+        if(!checkById.includes(feedback._id.toString())){
+          checkById.push(feedback._id.toString())
+          searchResult.push(feedback)
+        }
+      }
     }
 
-    res.send()
+    res.send(searchResult)
 
   } catch (error) {
     res.status(500).send(error)
