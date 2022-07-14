@@ -1,16 +1,10 @@
-const {
-  auth
-} = require("../middlewares/auth");
+const { auth } = require("../middlewares/auth");
 const authorize = require("../middlewares/authorize");
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
-const {
-  resetPassword
-} = require("../emails/account");
+const { resetPassword } = require("../emails/account");
 const Role = require("../models/role");
-const {
-  isValidUpdate
-} = require("../utils/valid");
+const { isValidUpdate } = require("../utils/valid");
 const router = require("express").Router();
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
@@ -19,12 +13,12 @@ const ObjectId = mongoose.Types.ObjectId;
 //POST /user/guest
 router.post("/guest", async (req, res) => {
   const role = await Role.findOne({
-    name: "guest"
+    name: "guest",
   });
   const userId = new ObjectId();
   req.session.guest = {
     _id: userId,
-    role
+    role,
   };
   req.session.cartGuest = {
     _id: new ObjectId(),
@@ -34,16 +28,14 @@ router.post("/guest", async (req, res) => {
   };
 
   try {
-    res
-      .status(201)
-      .send({
-        guest: req.session.guest,
-        cartGuest: req.session.cartGuest
-      });
+    res.status(201).send({
+      guest: req.session.guest,
+      cartGuest: req.session.cartGuest,
+    });
   } catch (error) {
     console.log(error);
     res.status(400).send({
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -51,7 +43,7 @@ router.post("/guest", async (req, res) => {
 //POST /user/register
 router.post("/register", async (req, res) => {
   const role = await Role.findOne({
-    name: "customer"
+    name: "customer",
   });
   const user = new User({
     ...req.body,
@@ -66,12 +58,12 @@ router.post("/register", async (req, res) => {
     const token = await user.generateAuthToken();
     res.status(201).send({
       user,
-      token
+      token,
     });
   } catch (error) {
     console.log(error);
     res.status(400).send({
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -91,13 +83,13 @@ router.post("/login", async (req, res) => {
 
     res.send({
       user,
-      token
+      token,
     });
   } catch (error) {
     // console.log(error);
     console.log(error.message);
     res.status(400).send({
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -110,7 +102,7 @@ router.post("/logout", auth, async (req, res) => {
       (token) => token.token !== req.token
     );
     await req.user.save({
-      validateModifiedOnly: true
+      validateModifiedOnly: true,
     });
 
     //Delete session
@@ -127,7 +119,7 @@ router.post("/logoutAll", auth, async (req, res) => {
   try {
     req.user.tokens = [];
     await req.user.save({
-      validateModifiedOnly: true
+      validateModifiedOnly: true,
     });
 
     //Delete session
@@ -144,7 +136,7 @@ router.post("/logoutAll", auth, async (req, res) => {
 router.get("/profile", auth, authorize("customer"), async (req, res) => {
   res.send({
     user: req.user,
-    role: req.role
+    role: req.role,
   });
 });
 
@@ -165,15 +157,16 @@ router.patch("/profile", auth, async (req, res) => {
 
   //Check valid update
   const isValid = updates.every((update) => allowUpdateds.includes(update));
-  if (!isValid) return res.status(400).send({
-    error: "Invalid updates"
-  });
+  if (!isValid)
+    return res.status(400).send({
+      error: "Invalid updates",
+    });
 
   try {
     //Update user
     updates.forEach((update) => (req.user[update] = req.body[update]));
     await req.user.save({
-      validateModifiedOnly: true
+      validateModifiedOnly: true,
     });
 
     console.log(req.user);
@@ -181,7 +174,7 @@ router.patch("/profile", auth, async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(400).send({
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -189,35 +182,27 @@ router.patch("/profile", auth, async (req, res) => {
 //PATCH  /user/password (check empty bằng frontend)
 router.patch("/new-password", auth, async (req, res) => {
   try {
-    const {
-      currPassword,
-      newPassword,
-      confirm
-    } = req.body;
+    const { currPassword, newPassword, confirm } = req.body;
 
     //Check current password
     const checkPwd = await bcrypt.compare(currPassword, req.user.password);
     if (!checkPwd)
       return res.status(400).send({
-        error: "Mật khẩu cũ không đúng"
+        error: "Mật khẩu cũ không đúng",
       });
 
     //Check newPassword === confirm
     if (newPassword !== confirm)
-      return res
-        .status(400)
-        .send({
-          error: "Mật khẩu mới không giống mật khẩu cũ"
-        });
+      return res.status(400).send({
+        error: "Mật khẩu mới không giống mật khẩu cũ",
+      });
 
     //Compare password to old password
     const isMatch = await bcrypt.compare(newPassword, req.user.password);
     if (isMatch)
-      return res
-        .status(400)
-        .send({
-          error: "Mật khẩu mới giống với mật khẩu cũ"
-        });
+      return res.status(400).send({
+        error: "Mật khẩu mới giống với mật khẩu cũ",
+      });
 
     //Change new password
     req.user.password = newPassword;
@@ -226,10 +211,10 @@ router.patch("/new-password", auth, async (req, res) => {
   } catch (error) {
     console.log(error);
     return res.status(400).send({
-      error: error.message
+      error: error.message,
     });
     res.status(500).send({
-      error
+      error,
     });
   }
 });
@@ -240,20 +225,21 @@ router.patch("/role/:id", auth, authorize("admin"), async (req, res) => {
   const allowUpdateds = ["role"];
   if (!isValidUpdate(updates, allowUpdateds))
     return res.status(400).send({
-      error: "Invalid updates"
+      error: "Invalid updates",
     });
 
   try {
     //Check idUser exist
     const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).send({
-      error: "Cannot find user"
-    });
+    if (!user)
+      return res.status(404).send({
+        error: "Cannot find user",
+      });
 
     //Check idRole exist
     if (!(await Role.findById(req.body.role)))
       return res.status(404).send({
-        error: "Cannot find roleId"
+        error: "Cannot find roleId",
       });
 
     //Find and Update role
@@ -264,7 +250,7 @@ router.patch("/role/:id", auth, authorize("admin"), async (req, res) => {
   } catch (e) {
     if (e.name === "CastError" && e.kind === "ObjectId")
       return res.status(400).send({
-        error: "Invalid ID"
+        error: "Invalid ID",
       });
     res.status(400).send(e.message);
   }
@@ -276,17 +262,19 @@ router.patch("/status/:id", auth, authorize("customer"), async (req, res) => {
   const allowUpdateds = ["status"];
   if (!isValidUpdate(updates, allowUpdateds))
     return res.status(400).send({
-      error: "Invalid updates"
+      error: "Invalid updates",
     });
 
   try {
     //Find and Update user status
     const user = await User.findByIdAndUpdate(
-      req.params.id, {
+      req.params.id,
+      {
         status: req.body.status,
-      }, {
+      },
+      {
         runValidators: true,
-        new: true
+        new: true,
       }
     );
 
@@ -296,7 +284,7 @@ router.patch("/status/:id", auth, authorize("customer"), async (req, res) => {
   } catch (e) {
     if (e.name === "CastError" && e.kind === "ObjectId")
       return res.status(400).send({
-        error: "Invalid ID"
+        error: "Invalid ID",
       });
     res.status(400).send(e.message);
   }
@@ -311,16 +299,15 @@ router.post("/forgotten", auth, async (req, res) => {
 ////////////////////////////////Admin Role
 router.get("/admin/roles", auth, authorize("admin"), async (req, res) => {
   try {
-    const roles = await Role.find({})
-    res.send(roles)
+    const roles = await Role.find({});
+    res.send(roles);
   } catch (error) {
-    res.status(500).send()
+    res.status(500).send();
   }
-})
-
+});
 
 //POST /user/admin
-router.post("/admin", auth, authorize('admin'), async (req, res) => {
+router.post("/admin", auth, authorize("admin"), async (req, res) => {
   const user = new User(req.body);
   try {
     await user.save();
@@ -330,106 +317,97 @@ router.post("/admin", auth, authorize('admin'), async (req, res) => {
   }
 });
 
-//GET /user/admin 
-//Users lists  
+//GET /user/admin
+//Users lists
 //filter : gender, role, status
 //gender = [M/F/D]
 //sortable: id, fullName, gender, email, phone, role, status
 //sortedBy=id_desc //sortedBy=status_asc  ...
 //Pagination: limit, page
-router.get("/admin", auth, authorize('admin'), async (req, res) => {
+router.get("/admin", auth, authorize("admin"), async (req, res) => {
   try {
-    const {
-      gender,
-      role,
-      status,
-      sortedBy,
-      limit,
-      page
-    } = req.query
-    const match = {}
+    const { gender, role, status, sortedBy, limit, page } = req.query;
+    const match = {};
     const sort = {
-      _id: -1
-    }
+      _id: -1,
+    };
     const options = {
-      sort
-    }
+      sort,
+    };
 
     //filter
 
     if (status) {
-      match.status = (status === "true")
+      match.status = status === "true";
     }
 
     if (gender) {
-      match.gender = gender
+      match.gender = gender;
     }
 
     //sort
     if (sortedBy) {
-      const parts = sortedBy.split('_')
+      const parts = sortedBy.split("_");
 
-      if (parts[0] === 'id') {
-        sort['_id'] = (parts[1] === 'desc' ? -1 : 1)
-        options.sort = sort
+      if (parts[0] === "id") {
+        sort["_id"] = parts[1] === "desc" ? -1 : 1;
+        options.sort = sort;
       } else {
-        sort[parts[0]] = (parts[1] === 'desc' ? -1 : 1)
-        delete sort._id
-        options.sort = sort
+        sort[parts[0]] = parts[1] === "desc" ? -1 : 1;
+        delete sort._id;
+        options.sort = sort;
       }
     }
 
     //Paging
-    if (limit) options.limit = parseInt(limit)
+    if (limit) options.limit = parseInt(limit);
     if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
 
     const users = await User.find(match, null, options).populate({
-      path: 'role',
-      select: 'name'
-    })
+      path: "role",
+      select: "name",
+    });
 
-      function compareAsc( a, b ) {
-        if ( a.role.name < b.role.name ){
-          return -1;
-        }
-        if ( a.role.name > b.role.name ){
-          return 1;
-        }
-        return 0;
+    function compareAsc(a, b) {
+      if (a.role.name < b.role.name) {
+        return -1;
       }
+      if (a.role.name > b.role.name) {
+        return 1;
+      }
+      return 0;
+    }
 
-      function compareDesc( a, b ) {
-        if ( a.role.name < b.role.name ){
-          return 1;
-        }
-        if ( a.role.name > b.role.name ){
-          return -1;
-        }
-        return 0;
+    function compareDesc(a, b) {
+      if (a.role.name < b.role.name) {
+        return 1;
       }
+      if (a.role.name > b.role.name) {
+        return -1;
+      }
+      return 0;
+    }
 
-      //sort role
-      if(sort.role) {
-        if(sort.role===1)
-          users.sort(compareAsc)
-        else users.sort(compareDesc)
-      }
+    //sort role
+    if (sort.role) {
+      if (sort.role === 1) users.sort(compareAsc);
+      else users.sort(compareDesc);
+    }
 
     //role filter
     if (role) {
       const sendUsers = users.filter((user) => {
-        if (user.role.name.match(new RegExp(role)))
-          return user
-      })
+        if (user.role.name.match(new RegExp(role))) return user;
+      });
       return res.send({
         users: sendUsers,
-        count: sendUsers.length
+        count: sendUsers.length,
       });
     }
 
     res.send({
       users,
-      count: users.length
+      count: users.length,
     });
   } catch (e) {
     res.status(500).send(e.message);
@@ -508,7 +486,7 @@ router.get('/admin/search', auth, authorize('admin'), async (req, res) => {
     console.log(error)
     res.status(500).send(error)
   }
-})
+});
 
 //GET /user/admin/getOne?userID=...
 router.get("/admin/getOne", auth, authorize("admin"), async (req, res) => {
@@ -521,41 +499,45 @@ router.get("/admin/getOne", auth, authorize("admin"), async (req, res) => {
   } catch (e) {
     if (e.name === "CastError" && e.kind === "ObjectId")
       return res.status(400).send({
-        error: "Invalid ID"
+        error: "Invalid ID",
       });
     res.status(500).send(e);
   }
 });
 
 //PUT /user/admin/:id
-router.put("/admin/:id", auth, authorize("admin"), async (req, res) => {
+router.put("/admin/", auth, authorize("admin"), async (req, res) => {
   const updates = Object.keys(req.body);
   const allowUpdateds = [
     "status",
     "role",
+    "id",
+    "address",
+    "email",
+    "fullName",
+    "phone",
   ];
 
   if (!isValidUpdate(updates, allowUpdateds))
     return res.status(400).send({
-      error: "Invalid updates"
+      error: "Invalid updates",
     });
 
   try {
-    const user = await User.findById(req.params.id)
+    const user = await User.findById(req.body?.id);
 
-    if (!user)
-      return res.sendStatus(404);
+    if (!user) return res.sendStatus(404);
 
     updates.forEach((update) => {
-      user[update] = req.body[update]
-    })
-    await user.save()
+      user[update] = req.body[update];
+    });
+    await user.save();
 
     res.send(user);
   } catch (e) {
     if (e.name === "CastError" && e.kind === "ObjectId")
       return res.status(400).send({
-        error: "Invalid ID"
+        error: "Invalid ID",
       });
     res.status(400).send(e.message);
   }
@@ -573,6 +555,5 @@ router.put("/admin/:id", auth, authorize("admin"), async (req, res) => {
 //     res.status(500).send(error)
 //   }
 // })
-
 
 module.exports = router;

@@ -1,6 +1,6 @@
-const mongoose = require("mongoose")
-const uniqueValidator = require("mongoose-unique-validator")
-const validator = require("validator")
+const mongoose = require("mongoose");
+const uniqueValidator = require("mongoose-unique-validator");
+const validator = require("validator");
 
 /////////////////////////////////////////////
 //Schema
@@ -15,7 +15,7 @@ const customerSchema = mongoose.Schema(
       lowercase: true,
 
       validate(email) {
-        if (!validator.isEmail(email)) throw new Error("Email is invalid")
+        if (!validator.isEmail(email)) throw new Error("Email is invalid");
       },
     },
 
@@ -45,7 +45,7 @@ const customerSchema = mongoose.Schema(
 
       validate(phone) {
         if (!validator.isMobilePhone(phone)) {
-          throw new Error("This is not a phone number")
+          throw new Error("This is not a phone number");
         }
       },
     },
@@ -64,31 +64,32 @@ const customerSchema = mongoose.Schema(
 
     //History
     history: {
-      type: [Object]
-    }
+      type: [Object],
+    },
   },
   {
     timestamps: true,
   }
-)
-customerSchema.plugin(uniqueValidator)
+);
+customerSchema.plugin(uniqueValidator);
 
 customerSchema.pre("save", async function (next) {
-  const customer = this
-  const history= {
-    email:customer.email,
-    fullname:customer.fullName,
-    status:customer.status,
-    gender:customer.gender,
-    phone:customer.phone,
-    address:customer.address,
+  const customer = this;
+  const history = {
+    email: customer.email,
+    fullName: customer.fullName,
+    status: customer.status,
+    gender: customer.gender,
+    phone: customer.phone,
+    address: customer.address,
     updatedBy: customer.updatedBy,
-    updatedAt: customer.updatedAt}
-    customer.history.push(history)
-    
+    updatedAt: customer.updatedAt,
+  };
+  customer.history.push(history);
+
   next();
 });
 
 //Model
-const Customer = mongoose.model("Customer", customerSchema)
-module.exports = Customer
+const Customer = mongoose.model("Customer", customerSchema);
+module.exports = Customer;

@@ -5,8 +5,7 @@ const router = require("express").Router();
 const { isValidUpdate, updatesFilter } = require("../utils/valid");
 const Category = require("../models/category");
 
-
-              ///////////////////////////////////COMMON///////////////////////////////////////
+///////////////////////////////////COMMON///////////////////////////////////////
 //GET /products?featured=true
 router.get("/", async (req, res) => {
   const { feartured, limit, page, sortBy, publicDate, status } = req.query;
@@ -112,19 +111,25 @@ router.get("/size", async (req, res) => {
   }
 });
 
-
-
-
-              ////////////////////////////////////Marketing//////////////////////////// 
+////////////////////////////////////Marketing////////////////////////////
 
 //GEt /products/marketing
-        //get product list
+//get product list
 //Pagination:     ?limit=...&page=...
 //Filter:         ?category=...&status=...
 //Sort:           ?sortedBy=  title/category/listPrice/salePrice/featured/status_desc/asc
-                        // ex: sortedBy=title_desc          //ex:sortedBy=status_asc
+// ex: sortedBy=title_desc          //ex:sortedBy=status_asc
 router.get("/marketing", async (req, res) => {
-  const { category, sortedBy, feartured, limit, page, sortBy, publicDate, status } = req.query;
+  const {
+    category,
+    sortedBy,
+    feartured,
+    limit,
+    page,
+    sortBy,
+    publicDate,
+    status,
+  } = req.query;
   const match = {};
   const sort = { "briefInformation.publicDate": -1 };
   const options = {
@@ -162,39 +167,41 @@ router.get("/marketing", async (req, res) => {
   }
 });
 
-// router.get("/test", async (req, res) => {
-//   const { feartured, limit, page, sortBy, publicDate, status } = req.query;
-//   const match = {};
-//   const sort = { "briefInformation.publicDate": -1 };
-//   const options = {
-//     limit: 12,
-//     skip: 0,
-//     sort,
-//   };
+router.get("/test", async (req, res) => {
+  const { feartured, limit, page, sortBy, publicDate, status } = req.query;
+  const match = {};
+  const sort = { "briefInformation.publicDate": -1 };
+  const options = {
+    limit: 12,
+    skip: 0,
+    sort,
+  };
 
-//   //Product fearture
-//   if (feartured) {
-//     match.feartured = feartured === "true";
-//   }
-//   //Product status
-//   if (status) {
-//     match.status = status === "true";
-//   }
+  //Product fearture
+  if (feartured) {
+    match.feartured = feartured === "true";
+  }
+  //Product status
+  if (status) {
+    match.status = status === "true";
+  }
 
-//   //Paging
-//   if (limit) options.limit = parseInt(limit);
-//   if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
-//   if (publicDate) {
-//     sort["briefInformation.publicDate"] = publicDate === "desc" ? -1 : 1;
-//   }
-//   const count = await Product.countDocuments();
-//   try {
-//     const products = await Product.find(match, null, options);
-//     res.send({ products, count });
-//   } catch (e) {
-//     res.status(500).send();
-//   }
-// });
+  //Paging
+  if (limit) options.limit = parseInt(limit);
+  if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
+  if (publicDate) {
+    sort["briefInformation.publicDate"] = publicDate === "desc" ? -1 : 1;
+  }
+  const count = await Product.countDocuments();
+  try {
+    const products = await Product.find(match, null, options).populate({
+      path: "category",
+    });
+    res.send({ products, count });
+  } catch (e) {
+    res.status(500).send();
+  }
+});
 
 //GET /products/:id
 router.get("/:id", async (req, res) => {
@@ -285,9 +292,8 @@ router.put("/:id", async (req, res) => {
 //PATCH  /products/deactive
 //DELETE /products
 
-
 //POST /products
-router.post("/",auth, authorize('marketing'), async (req, res) => {
+router.post("/", auth, authorize("marketing"), async (req, res) => {
   console.log(req.body);
   const product = new Product({ ...req.body });
   console.log("-----------------------");

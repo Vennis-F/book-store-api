@@ -7,11 +7,10 @@ const auth = async (req, res, next) => {
   try {
     // console.log(req.session.receiverInfo);
     let token = req.header("Authorization").split(" ")[1];
-    if(!token) {
-       token = req.header("Authorization").slice(6);
+    if (!token) {
+      token = req.header("Authorization").slice(6);
     }
-    console.log('token: ',token)
-    const decode = await jwt.verify(token, "SEC_JWT");
+    const decode = jwt.verify(token, "SEC_JWT");
     const user = await User.findOne({ _id: decode._id, "tokens.token": token });
 
     //Check user not exist
