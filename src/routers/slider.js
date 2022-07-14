@@ -106,7 +106,7 @@ router.get("/marketing/search",auth, authorize('marketing'),async (req, res) => 
     console.log(error)
     return res.status(500).send()
   }
-);
+});
 
 //GET /sliders/marketing/:id
 router.get("/marketing/:id", auth, authorize("marketing"), async (req, res) => {

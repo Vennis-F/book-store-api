@@ -223,7 +223,7 @@ router.get('/saleManager/search', auth, authorize('saleManager'), async (req,res
   } catch (error) {
     res.status(500).send(error)
   }
-);
+});
 
 //GET /orders/saleManager/getOne?orderId=...
 router.get(
@@ -363,53 +363,40 @@ router.get("/saler", auth, authorize("saler"), async (req, res) => {
     res.status(500).send(e);
   }
 });
-
-//Post /orders/saler/search
-//search by orderId, customerName     ?orderId=...    customerName=...
-//pagination          ?limit=...&page=...
-router.post("/saler/search", auth, authorize("saler"), async (req, res) => {
-  try {
-    const { limit, page, customerName, orderId } = req.query;
-    const options = {};
-
-    //Paging
-    if (limit) options.limit = parseInt(limit);
-    if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
-
-    if (customerName) {
-      let name = new RegExp(customerName, "gi");
-      const order = await Order.find(
-        { receiverName: name, saler: req.user._id },
-        null,
-        options
-      );
-      return res.send(order);
-    }
-  });
   
-  //GET /orders/saler/search?search=...
+ //GET /orders/saler/search?search=...
   //search by orderId, customerName     
   //pagination          ?limit=...&page=...
-  router.get('/saler/search', auth, authorize('saler'), async (req,res) => {
-    try {
-      let {limit, page, search} = req.query
-      const options={}
+router.get('/saler/search', auth, authorize('saler'), async (req,res) => {
+  try {
+    let {limit, page, search} = req.query
+    const options={}
+
+  //Paging
+  if(limit) options.limit = parseInt(limit) 
+    else{limit=5}
+  if(page) options.skip= parseInt(limit) * (parseInt(page) - 1)
+    else {
+      page=1
+      options.skip= parseInt(limit) * (parseInt(page) - 1)
+    }
+
+  const searchResult=[]
+  const checkById=[]   
+
+  //search
+  let name= new RegExp(search,'gi')
+  const orders = await Order.find({receiverName: name, saler: req.user._id},null, options)
+  for(const order of orders) {
+    if(checkById.length>=limit) break
+    if(!checkById.includes(order._id.toString())){
+      checkById.push(order._id.toString())
+      searchResult.push(order)
+    }
+  }
   
-    //Paging
-    if(limit) options.limit = parseInt(limit) 
-     else{limit=5}
-    if(page) options.skip= parseInt(limit) * (parseInt(page) - 1)
-      else {
-        page=1
-        options.skip= parseInt(limit) * (parseInt(page) - 1)
-      }
-
-    const searchResult=[]
-    const checkById=[]   
-
-    //search
-    let name= new RegExp(search,'gi')
-    const orders = await Order.find({receiverName: name, saler: req.user._id},null, options)
+  if(checkById<limit-1&&(search.length===12||search.length===24)) {
+    const orders = await Order.find({_id: new mongoose.Types.ObjectId(search), saler: req.user._id},null, options)
     for(const order of orders) {
       if(checkById.length>=limit) break
       if(!checkById.includes(order._id.toString())){
@@ -417,28 +404,13 @@ router.post("/saler/search", auth, authorize("saler"), async (req, res) => {
         searchResult.push(order)
       }
     }
-    
-    if(checkById<limit-1&&(search.length===12||search.length===24)) {
-      const orders = await Order.find({_id: new mongoose.Types.ObjectId(search), saler: req.user._id},null, options)
-      for(const order of orders) {
-        if(checkById.length>=limit) break
-        if(!checkById.includes(order._id.toString())){
-          checkById.push(order._id.toString())
-          searchResult.push(order)
-        }
-      }
-    }
-  
-    res.send(searchResult)
-    } catch (error) {
-      console.log(error)
-      res.status(500).send(error)
+  }
 
-    }
-
-    res.send();
+  res.send(searchResult)
   } catch (error) {
-    res.status(500).send(error);
+    console.log(error)
+    res.status(500).send(error)
+
   }
 });
 
