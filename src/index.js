@@ -15,16 +15,16 @@ const postRouter = require("./routers/post");
 const blogRouter = require("./routers/blog");
 const feedbackRouter = require("./routers/feedback");
 const sliderRouter = require("./routers/slider");
-const customerRouter= require('./routers/customer')
-const dashboardRouter = require('./routers/dashboard')
+const customerRouter = require("./routers/customer");
+const dashboardRouter = require("./routers/dashboard");
 const app = express();
 const port = process.env.PORT || 6969;
-
+require("./emails/reset-password");
 //Config
 app.use(frameguard({ action: "SAMEORIGIN" }));
 require("./db/mongoose");
 app.use(express.json());
-app.use(cors({ credentials: true, origin: 'http://localhost:5000' }));
+app.use(cors({ credentials: true, origin: "http://localhost:5000" }));
 
 //Session
 app.use(
@@ -57,8 +57,8 @@ app.use("/posts", postRouter);
 app.use("/blogs", blogRouter);
 app.use("/feedbacks", feedbackRouter);
 app.use("/sliders", sliderRouter);
-app.use("/customers",customerRouter);
-app.use("/dashboards",dashboardRouter);
+app.use("/customers", customerRouter);
+app.use("/dashboards", dashboardRouter);
 
 require("./models/slider");
 

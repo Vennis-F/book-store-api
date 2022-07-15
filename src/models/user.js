@@ -99,11 +99,11 @@ const userSchema = mongoose.Schema({
   }, // => roleID
 });
 
-userSchema.virtual('posts', {
-  ref: 'Post',
-  localField: '_id',
-  foreignField: 'author'
-})
+userSchema.virtual("posts", {
+  ref: "Post",
+  localField: "_id",
+  foreignField: "author",
+});
 
 userSchema.virtual("orders", {
   ref: "Order",
@@ -125,44 +125,45 @@ userSchema.plugin(uniqueValidator);
 //   return userObject
 // }
 
-userSchema.methods.toJSON= function() {
-  const user = this
-  const userProfile = user.toObject()
+userSchema.methods.toJSON = function () {
+  const user = this;
+  const userProfile = user.toObject();
 
-  delete userProfile.password
-  delete userProfile.tokens
-  delete userProfile.avatar
+  delete userProfile.password;
+  delete userProfile.tokens;
+  delete userProfile.avatar;
 
-  return userProfile
-}
+  return userProfile;
+};
 
-userSchema.methods.generateCustomer = async function()  {
- try { 
-  const user=this
-  await user.populate('role')
-  if(user.role.name==='customer') {
-    const customerCheck = await Customer.findOne({email:user.email})
-    if(customerCheck) return null
-    const customer= new Customer({
-      email: user.email,
-      fullName: user.fullName,
-      status: 'contact',
-      gender: user.gender,
-      phone: user.phone,
-      address: user.address,
-      updatedBy: '000000000000'
-    })
-    await customer.save()
-    return customer
+userSchema.methods.generateCustomer = async function () {
+  try {
+    const user = this;
+    await user.populate("role");
+    if (user.role.name === "customer") {
+      const customerCheck = await Customer.findOne({ email: user.email });
+      if (customerCheck) return null;
+      const customer = new Customer({
+        email: user.email,
+        fullName: user.fullName,
+        status: "contact",
+        gender: user.gender,
+        phone: user.phone,
+        address: user.address,
+        updatedBy: "000000000000",
+      });
+      await customer.save();
+      return customer;
+    }
+    return null;
+  } catch (e) {
+    console.log(e);
   }
-  return null
-  }catch (e){
-    console.log(e)
-  }
-}
+};
 
 userSchema.methods.generateAuthToken = async function () {
   const user = this;
+  console.log("Role: ", await Role.findById(user.role));
   const token = await jwt.sign(
     { _id: user._id, role: (await Role.findById(user.role)).code },
     "SEC_JWT"

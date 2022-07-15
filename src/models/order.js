@@ -145,112 +145,110 @@ orderSchema.pre("save", function (next) {
 orderSchema.pre("save", async function (next) {
   try {
     const order = this;
-    if(order.isModified('status')) {
-      if(order.status==='cancelled') {
-        for(const [index,item] of order.items.entries()) {
-          await order.populate({path:`items.${index}.product`})
-          item.product.quantity+=item.quantity
-          item.product.save()
+    if (order.isModified("status")) {
+      if (order.status === "cancelled") {
+        for (const [index, item] of order.items.entries()) {
+          await order.populate({ path: `items.${index}.product` });
+          item.product.quantity += item.quantity;
+          item.product.save();
         }
       }
     }
-    next()
+    next();
   } catch (e) {
     console.log(e);
   }
   next();
 });
 
-orderSchema.pre('save', async function(next) {
+orderSchema.pre("save", async function (next) {
   try {
-    const order=this
-    if(order.isModified('status')&& order.status!=='success') {
-    await order.populate('owner')
-    let owner = order.owner
-    if(!owner) {
-      owner= {
-        email: order.email,
-        fullName: order.receiverName,
-        gender: order.gender,
-        phone: order.phone,
-        address: order.address
+    const order = this;
+    if (order.isModified("status") && order.status !== "success") {
+      await order.populate("owner");
+      let owner = order.owner;
+      if (!owner) {
+        owner = {
+          email: order.email,
+          fullName: order.receiverName,
+          gender: order.gender,
+          phone: order.phone,
+          address: order.address,
+        };
       }
-    }
-    const customer= await Customer.findOne({email:owner.email})
-    if(!customer) {
-      const customer= new Customer({
-        email: owner.email,
-        fullName: owner.fullName,
-        status: 'contact',
-        gender: owner.gender,
-        phone: owner.phone,
-        address: owner.address,
-        updatedBy: '000000000000'
-      })
-      await customer.save()
-    } else {
-      if(customer.status==='contact') {
-        customer.status='potential'
-        customer.updatedBy='000000000000'
-        await customer.save()
-      }
-    }
-  }
-    next()
-  } catch (error) {
-    console.log('rm: ',error)
-  }
-})
-
-orderSchema.pre('save', async function(next) {
-  try {
-    if(!this.saler) {
-      const salerRole = await Role.findOne({name:'saler'})
-
-      const salers= await User.find({role: salerRole._id})
-
-      let min=1000000
-      let minSaler= salers[0]
-      for (const sale of salers) {
-        const saler= await sale.populate({path: 'orders'})
-        if(min>saler.orders.length) {
-            min=saler.orders.length
-            minSaler=sale
-        }
-      
-      this.saler=minSaler
-      console.log(this.saler)  
-      }
-    }
-    next()
-  } catch (error) {
-    
-  }
-})
-
-orderSchema.pre('save', async function(next) {
-  try {
-    const order=this
-    if(order.isModified('status')&& order.status==='success') {
-      await order.populate('owner')
-      const owner = order.owner
-      if(owner) {
-        const customer = await Customer.findOne({email:owner.email})
-        customer.status='customer' 
-        await customer.save()
+      const customer = await Customer.findOne({ email: owner.email });
+      if (!customer) {
+        const customer = new Customer({
+          email: owner.email,
+          fullName: owner.fullName,
+          status: "contact",
+          gender: owner.gender,
+          phone: owner.phone,
+          address: owner.address,
+          updatedBy: "000000000000",
+        });
+        await customer.save();
       } else {
-        console.log('here')
-        const customer = await Customer.findOne({email:order.email})
-        console.log('check: ',customer)
-          customer.status='customer'
-          await customer.save()
+        if (customer.status === "contact") {
+          customer.status = "potential";
+          customer.updatedBy = "000000000000";
+          await customer.save();
+        }
       }
     }
-    next()
+    next();
   } catch (error) {
-    console.log(error)
+    console.log("rm: ", error);
   }
-})
+});
+
+orderSchema.pre("save", async function (next) {
+  try {
+    if (!this.saler) {
+      const salerRole = await Role.findOne({ name: "saler" });
+
+      const salers = await User.find({ role: salerRole._id });
+
+      let min = 1000000;
+      let minSaler = salers[0];
+      for (const sale of salers) {
+        const saler = await sale.populate({ path: "orders" });
+        if (min > saler.orders.length) {
+          min = saler.orders.length;
+          minSaler = sale;
+        }
+
+        this.saler = minSaler;
+        console.log(this.saler);
+      }
+    }
+    next();
+  } catch (error) {}
+});
+
+orderSchema.pre("save", async function (next) {
+  try {
+    const order = this;
+    if (order.isModified("status") && order.status === "success") {
+      await order.populate("owner");
+      const owner = order.owner;
+      if (owner) {
+        const customer = await Customer.findOne({ email: owner.email });
+        customer.status = "customer";
+        await customer.save();
+      } else {
+        console.log("here");
+        const customer = await Customer.findOne({ email: order.email });
+        console.log("check: ", customer);
+        customer.status = "customer";
+        await customer.save();
+      }
+    }
+    next();
+  } catch (error) {
+    console.log(error);
+  }
+});
 
 //Model
 const Order = mongoose.model("Order", orderSchema);

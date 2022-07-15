@@ -1,22 +1,24 @@
-const mailgun = require("mailgun-js")
-const DOMAIN = "sandbox5d30c40077f64e8bbf96e9e769dbb2df.mailgun.org"
+const mailgun = require("mailgun-js");
+const DOMAIN = "sandbox18c9afa0c9ff40bab8b51a6913e12cc6.mailgun.org";
 const mg = mailgun({
-  apiKey: "3d7206a8e248244482ab7364331d57f3-523596d9-b49c4cce",
+  apiKey: "dbc2bd5305cc0d7b3ac6bea4844f1414-18e06deb-3fe844bf",
   domain: DOMAIN,
-})
+});
 
 const resetPassword = (email) => {
   const data = {
     from: "Excited User <me@samples.mailgun.org>",
     to: `${email}`,
     subject: "Bạn đã quên mật khẩu?",
-    text: "Hãy click vào đây link để đổi mật khẩu. I love You, 3000 <3",
-  }
+    html: '<html><body><button><a href="http://localhost:5000/forget-password">here</a></button></body></html>',
+  };
 
   mg.messages().send(data, function (error, body) {
-    if (error) return console.log(error.message)
-    console.log(body)
-  })
-}
+    if (error) return console.log(error.message);
+    console.log(body);
+  });
+};
 
-module.exports = { resetPassword }
+// resetPassword("hoanganhgo28062001@gmail.com");
+
+module.exports = { resetPassword };
