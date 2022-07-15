@@ -306,6 +306,7 @@ router.patch(
       updates.forEach((update) => {
         order[update] = req.body[update];
       });
+      if(!order.owner) order.owner='000000000000'
 
       await order.save();
 
@@ -313,6 +314,7 @@ router.patch(
     } catch (e) {
       if (e.name === "CastError" && e.kind === "ObjectId")
         return res.status(400).send({ error: "Invalid ID" });
+        console.log(e)
       res.status(400).send(e.message);
     }
   }
@@ -382,10 +384,12 @@ router.get("/saler", auth, authorize("saler"), async (req, res) => {
 //search by orderId, customerName
 //pagination          ?limit=...&page=...
 
-router.post("/saler/search", auth, authorize("saler"), async (req, res) => {
+
+router.post('/saler/search', auth, authorize('saler'), async (req,res) => {
   try {
-    let { limit, page, search } = req.query;
-    const options = {};
+    let {limit, page, search} = req.body
+    const options={}
+
 
     //Paging
     if (limit) options.limit = parseInt(limit);
