@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const Role = require("../models/role");
 const Post = require("../models/post");
 const Customer = require("./customer");
+
 require("../models/role");
 
 //SubSchema
@@ -136,6 +137,7 @@ userSchema.methods.toJSON = function () {
   return userProfile;
 };
 
+<<<<<<< HEAD
 userSchema.methods.generateCustomer = async function () {
   try {
     const user = this;
@@ -158,6 +160,30 @@ userSchema.methods.generateCustomer = async function () {
     return null;
   } catch (e) {
     console.log(e);
+=======
+userSchema.methods.generateCustomer = async function()  {
+ try { 
+  const user=this
+  await user.populate('role')
+  if(user.role.name==='customer') {
+    const customerCheck = await Customer.findOne({email:user.email})
+    if(customerCheck) return null
+    const customer= new Customer({
+      email: user.email,
+      fullName: user.fullName,
+      status: 'contact',
+      gender: user.gender,
+      phone: user.phone,
+      address: user.address,
+      updatedBy: '000000000000'
+    })
+    await customer.save()
+    return customer
+  }
+  return null
+  }catch (e){
+    console.log(e)
+>>>>>>> ca422cd93ec69cd659f914155a89f2adedd35ca0
   }
 };
 
