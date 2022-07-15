@@ -57,6 +57,21 @@ router.post("/search", async (req, res) => {
   }
 });
 
+router.post("/search/marketing", async (req, res) => {
+  try {
+    console.log(req.body);
+    const products = await Product.find({
+      $text: { $search: req.body.searchText },
+    });
+    // .skip(0)
+    // .limit(10);
+    res.send(products);
+  } catch (e) {
+    console.log(e);
+    res.status(500).send();
+  }
+});
+
 //GET /products/category/
 router.get("/category/:categoryId", async (req, res) => {
   const cateId = req.params.categoryId;

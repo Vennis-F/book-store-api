@@ -178,52 +178,66 @@ router.get("/saleManager", auth, authorize("saleManager"), async (req, res) => {
 });
 
 //GET /orders/saleManager/search?search=...
-//search by orderId, customerName     
+//search by orderId, customerName
 //pagination          ?limit=...&page=...
-router.get('/saleManager/search', auth, authorize('saleManager'), async (req,res) => {
-  try {
-    let {limit, page, search} = req.query
-    const options={}
+router.get(
+  "/saleManager/search",
+  auth,
+  authorize("saleManager"),
+  async (req, res) => {
+    try {
+      let { limit, page, search } = req.query;
+      const options = {};
 
-    //Paging
-    if(limit) options.limit = parseInt(limit) 
-      else{limit=5}
-    if(page) options.skip= parseInt(limit) * (parseInt(page) - 1)
+      //Paging
+      if (limit) options.limit = parseInt(limit);
       else {
-        page=1
-        options.skip= parseInt(limit) * (parseInt(page) - 1)
+        limit = 5;
+      }
+      if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
+      else {
+        page = 1;
+        options.skip = parseInt(limit) * (parseInt(page) - 1);
       }
 
-    const searchResult=[]
-    const checkById=[]  
-    
-    //search
-    let name= new RegExp(search,'gi')
-    const orders = await Order.find({receiverName: name},null, options)
-    for(const order of orders) {
-      if(checkById.length>=limit) break
-      if(!checkById.includes(order._id.toString())){
-        checkById.push(order._id.toString())
-        searchResult.push(order)
-      }
-    }
+      const searchResult = [];
+      const checkById = [];
 
-    if(checkById<limit-1&&(search.length===12||search.length===24)) {
-      const orders = await Order.find({_id: new mongoose.Types.ObjectId(search)},null, options)
-      for(const order of orders) {
-        if(checkById.length>=limit) break
-        if(!checkById.includes(order._id.toString())){
-          checkById.push(order._id.toString())
-          searchResult.push(order)
+      //search
+      let name = new RegExp(search, "gi");
+      const orders = await Order.find({ receiverName: name }, null, options);
+      for (const order of orders) {
+        if (checkById.length >= limit) break;
+        if (!checkById.includes(order._id.toString())) {
+          checkById.push(order._id.toString());
+          searchResult.push(order);
         }
       }
-    }
 
-    res.send(searchResult)
-  } catch (error) {
-    res.status(500).send(error)
+      if (
+        checkById < limit - 1 &&
+        (search.length === 12 || search.length === 24)
+      ) {
+        const orders = await Order.find(
+          { _id: new mongoose.Types.ObjectId(search) },
+          null,
+          options
+        );
+        for (const order of orders) {
+          if (checkById.length >= limit) break;
+          if (!checkById.includes(order._id.toString())) {
+            checkById.push(order._id.toString());
+            searchResult.push(order);
+          }
+        }
+      }
+
+      res.send(searchResult);
+    } catch (error) {
+      res.status(500).send(error);
+    }
   }
-});
+);
 
 //GET /orders/saleManager/getOne?orderId=...
 router.get(
@@ -363,55 +377,67 @@ router.get("/saler", auth, authorize("saler"), async (req, res) => {
     res.status(500).send(e);
   }
 });
-  
+
 //GET /orders/saler/search?search=...
-//search by orderId, customerName     
+//search by orderId, customerName
 //pagination          ?limit=...&page=...
 
-router.get('/saler/search', auth, authorize('saler'), async (req,res) => {
+router.post("/saler/search", auth, authorize("saler"), async (req, res) => {
   try {
-    let {limit, page, search} = req.query
-    const options={}
+    let { limit, page, search } = req.query;
+    const options = {};
 
-  //Paging
-  if(limit) options.limit = parseInt(limit) 
-    else{limit=5}
-  if(page) options.skip= parseInt(limit) * (parseInt(page) - 1)
+    //Paging
+    if (limit) options.limit = parseInt(limit);
     else {
-      page=1
-      options.skip= parseInt(limit) * (parseInt(page) - 1)
+      limit = 5;
+    }
+    if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
+    else {
+      page = 1;
+      options.skip = parseInt(limit) * (parseInt(page) - 1);
     }
 
-  const searchResult=[]
-  const checkById=[]   
+    const searchResult = [];
+    const checkById = [];
 
-  //search
-  let name= new RegExp(search,'gi')
-  const orders = await Order.find({receiverName: name, saler: req.user._id},null, options)
-  for(const order of orders) {
-    if(checkById.length>=limit) break
-    if(!checkById.includes(order._id.toString())){
-      checkById.push(order._id.toString())
-      searchResult.push(order)
-    }
-  }
-  
-  if(checkById<limit-1&&(search.length===12||search.length===24)) {
-    const orders = await Order.find({_id: new mongoose.Types.ObjectId(search), saler: req.user._id},null, options)
-    for(const order of orders) {
-      if(checkById.length>=limit) break
-      if(!checkById.includes(order._id.toString())){
-        checkById.push(order._id.toString())
-        searchResult.push(order)
+    //search
+    let name = new RegExp(search, "gi");
+    const orders = await Order.find(
+      { receiverName: name, saler: req.user._id },
+      null,
+      options
+    );
+    for (const order of orders) {
+      if (checkById.length >= limit) break;
+      if (!checkById.includes(order._id.toString())) {
+        checkById.push(order._id.toString());
+        searchResult.push(order);
       }
     }
-  }
 
-  res.send(searchResult)
+    if (
+      checkById < limit - 1 &&
+      (search.length === 12 || search.length === 24)
+    ) {
+      const orders = await Order.find(
+        { _id: new mongoose.Types.ObjectId(search), saler: req.user._id },
+        null,
+        options
+      );
+      for (const order of orders) {
+        if (checkById.length >= limit) break;
+        if (!checkById.includes(order._id.toString())) {
+          checkById.push(order._id.toString());
+          searchResult.push(order);
+        }
+      }
+    }
+
+    res.send(searchResult);
   } catch (error) {
-    console.log(error)
-    res.status(500).send(error)
-
+    console.log(error);
+    res.status(500).send(error);
   }
 });
 
