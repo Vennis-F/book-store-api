@@ -139,14 +139,10 @@ router.get("/:id", auth, authorize("marketing"), async (req, res) => {
     let customer = await Customer.findById(req.params.id);
     if (!customer) return res.sendStatus(404);
 
-    for (const each of customer.history) {
-      const updater = await User.findById(each.updatedBy);
-      each.updatedBy = updater.fullName;
-    }
-
     console.log(customer);
     res.send(customer);
   } catch (e) {
+    console.log(e)
     if (e.name === "CastError" && e.kind === "ObjectId")
       return res.status(400).send({ error: "Invalid ID" });
     res.status(500).send(e);

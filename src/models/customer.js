@@ -75,6 +75,12 @@ customerSchema.plugin(uniqueValidator);
 
 customerSchema.pre("save", async function (next) {
   const customer = this;
+  if(customer.updatedBy.length===12||customer.updatedBy.length===24) await customer.populate('updatedBy')
+
+  let updater
+  if(customer.updatedBy) updater= customer.updatedBy.fullName
+  else updater= 'Auto'
+
   const history = {
     email: customer.email,
     fullName: customer.fullName,
@@ -82,7 +88,7 @@ customerSchema.pre("save", async function (next) {
     gender: customer.gender,
     phone: customer.phone,
     address: customer.address,
-    updatedBy: customer.updatedBy,
+    updatedBy: updater,
     updatedAt: customer.updatedAt,
   };
   customer.history.push(history);

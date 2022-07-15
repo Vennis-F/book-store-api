@@ -54,6 +54,8 @@ router.post("/register", async (req, res) => {
     // //Delete session
     // req.session.destroy();
 
+    //auto create customer
+    await user.generateCustomer()
     //Create user
     const token = await user.generateAuthToken();
     res.status(201).send({
