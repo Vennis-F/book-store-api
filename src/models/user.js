@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const Role = require("../models/role");
 const Post = require("../models/post");
 const Customer = require("./customer");
+
 require("../models/role");
 
 //SubSchema
@@ -99,11 +100,11 @@ const userSchema = mongoose.Schema({
   }, // => roleID
 });
 
-userSchema.virtual('posts', {
-  ref: 'Post',
-  localField: '_id',
-  foreignField: 'author'
-})
+userSchema.virtual("posts", {
+  ref: "Post",
+  localField: "_id",
+  foreignField: "author",
+});
 
 userSchema.virtual("orders", {
   ref: "Order",
@@ -125,16 +126,16 @@ userSchema.plugin(uniqueValidator);
 //   return userObject
 // }
 
-userSchema.methods.toJSON= function() {
-  const user = this
-  const userProfile = user.toObject()
+userSchema.methods.toJSON = function () {
+  const user = this;
+  const userProfile = user.toObject();
 
-  delete userProfile.password
-  delete userProfile.tokens
-  delete userProfile.avatar
+  delete userProfile.password;
+  delete userProfile.tokens;
+  delete userProfile.avatar;
 
-  return userProfile
-}
+  return userProfile;
+};
 
 userSchema.methods.generateCustomer = async function()  {
  try { 

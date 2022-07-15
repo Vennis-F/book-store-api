@@ -56,57 +56,59 @@ router.get("/marketing/", auth, authorize("marketing"), async (req, res) => {
   }
 });
 
-
 //GET /sliders/marketing/search?search=...
 // search: title, backlink
 //pagination:   ?limit=...&page=...
+
 router.post("/marketing/search",auth, authorize('marketing'),async (req, res) => {
   try {
     let {search, limit, page} =req.body
     const options= {}
 
-    //Paging
-    if(limit) options.limit = parseInt(limit) 
-      else{limit=5}
-    if(page) options.skip= parseInt(limit) * (parseInt(page) - 1)
+      //Paging
+      if (limit) options.limit = parseInt(limit);
       else {
-        page=1
-        options.skip= parseInt(limit) * (parseInt(page) - 1)
+        limit = 5;
+      }
+      if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
+      else {
+        page = 1;
+        options.skip = parseInt(limit) * (parseInt(page) - 1);
       }
 
-    //search
-    const searchResult=[]
-    const checkById=[]
+      //search
+      const searchResult = [];
+      const checkById = [];
 
-    const title= new RegExp(search)
-    const sliders = await Slider.find({title: title},null,options)
-    for(const slider of sliders) {
-      if(checkById.length>=limit) break
-      if(!checkById.includes(slider._id.toString())){
-        checkById.push(slider._id.toString())
-        searchResult.push(slider)
-      }
-    }
-
-    if(checkById<limit-1){
-      const backlink= new RegExp(search)
-      const sliders = await Slider.find({backlink},null,options)
-      for(const slider of sliders) {
-        if(checkById.length>=limit) break
-        if(!checkById.includes(slider._id.toString())){
-          checkById.push(slider._id.toString())
-          searchResult.push(slider)
+      const title = new RegExp(search);
+      const sliders = await Slider.find({ title: title }, null, options);
+      for (const slider of sliders) {
+        if (checkById.length >= limit) break;
+        if (!checkById.includes(slider._id.toString())) {
+          checkById.push(slider._id.toString());
+          searchResult.push(slider);
         }
       }
+
+      if (checkById < limit - 1) {
+        const backlink = new RegExp(search);
+        const sliders = await Slider.find({ backlink }, null, options);
+        for (const slider of sliders) {
+          if (checkById.length >= limit) break;
+          if (!checkById.includes(slider._id.toString())) {
+            checkById.push(slider._id.toString());
+            searchResult.push(slider);
+          }
+        }
+      }
+
+      res.send(searchResult);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send();
     }
-
-    res.send(searchResult)
-
-  } catch (error) {
-    console.log(error)
-    return res.status(500).send()
   }
-});
+);
 
 //GET /sliders/marketing/:id
 router.get("/marketing/:id", auth, authorize("marketing"), async (req, res) => {
