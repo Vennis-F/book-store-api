@@ -74,14 +74,20 @@ router.get("/", async (req, res) => {
 //GET /posts/search?search=...
 //search by title
 //pagination          ?limit=...&page=...
+<<<<<<< HEAD
+=======
 
+>>>>>>> ca422cd93ec69cd659f914155a89f2adedd35ca0
 router.post("/search", auth, authorize("marketing"), async (req, res) => {
   try {
     let { limit, page, search } = req.body;
     const options = {};
     let title = new RegExp(search, "gi");
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> ca422cd93ec69cd659f914155a89f2adedd35ca0
     //Paging
     if (limit) options.limit = parseInt(limit);
     else {

@@ -137,6 +137,30 @@ userSchema.methods.toJSON = function () {
   return userProfile;
 };
 
+<<<<<<< HEAD
+userSchema.methods.generateCustomer = async function () {
+  try {
+    const user = this;
+    await user.populate("role");
+    if (user.role.name === "customer") {
+      const customerCheck = await Customer.findOne({ email: user.email });
+      if (customerCheck) return null;
+      const customer = new Customer({
+        email: user.email,
+        fullName: user.fullName,
+        status: "contact",
+        gender: user.gender,
+        phone: user.phone,
+        address: user.address,
+        updatedBy: "000000000000",
+      });
+      await customer.save();
+      return customer;
+    }
+    return null;
+  } catch (e) {
+    console.log(e);
+=======
 userSchema.methods.generateCustomer = async function()  {
  try { 
   const user=this
@@ -159,11 +183,13 @@ userSchema.methods.generateCustomer = async function()  {
   return null
   }catch (e){
     console.log(e)
+>>>>>>> ca422cd93ec69cd659f914155a89f2adedd35ca0
   }
-}
+};
 
 userSchema.methods.generateAuthToken = async function () {
   const user = this;
+  console.log("Role: ", await Role.findById(user.role));
   const token = await jwt.sign(
     { _id: user._id, role: (await Role.findById(user.role)).code },
     "SEC_JWT"
