@@ -55,7 +55,7 @@ router.post("/register", async (req, res) => {
     // req.session.destroy();
 
     //auto create customer
-    await user.generateCustomer()
+    await user.generateCustomer();
     //Create user
     const token = await user.generateAuthToken();
     res.status(201).send({
@@ -293,9 +293,20 @@ router.patch("/status/:id", auth, authorize("customer"), async (req, res) => {
 });
 
 //POST / user / forgotten
-router.post("/forgotten", auth, async (req, res) => {
-  resetPassword(req.body.email);
-  res.send();
+router.post("/forgotten", async (req, res) => {
+  const { email } = req.body;
+  try {
+    if (!email) throw new Error();
+
+    //Check email is exist
+    const user = await User.findOne({ email });
+    console.log(user);
+    if (!user) return res.sendStatus(404);
+    res.send();
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({ error });
+  }
 });
 
 ////////////////////////////////Admin Role
