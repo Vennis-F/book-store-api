@@ -86,7 +86,10 @@ const addCartItemGuest = (cart, product, qNeed) => {
     product: product._id,
   };
 
-  cart.items.push({ ...cartItem });
+  console.log("-----");
+  console.log(cart);
+  if (!cart) return (cart.items = [cartItem]);
+  else cart.items.push({ ...cartItem });
 };
 
 //

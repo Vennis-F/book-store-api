@@ -137,34 +137,38 @@ userSchema.methods.toJSON = function () {
   return userProfile;
 };
 
-userSchema.methods.generateCustomer = async function()  {
- try { 
-  const user=this
-  await user.populate('role')
-  if(user.role.name==='customer') {
-    const customerCheck = await Customer.findOne({email:user.email})
-    if(customerCheck) return null
-    const customer= new Customer({
-      email: user.email,
-      fullName: user.fullName,
-      status: 'contact',
-      gender: user.gender,
-      phone: user.phone,
-      address: user.address,
-      updatedBy: '000000000000'
-    })
-    await customer.save()
-    return customer
+userSchema.methods.generateCustomer = async function () {
+  try {
+    const user = this;
+    await user.populate("role");
+    if (user.role.name === "customer") {
+      const customerCheck = await Customer.findOne({ email: user.email });
+
+      //Check customer already exist
+      if (customerCheck) return null;
+
+      //Create customer
+      const customer = new Customer({
+        email: user.email,
+        fullName: user.fullName,
+        status: "contact",
+        gender: user.gender,
+        phone: user.phone,
+        address: user.address,
+        updatedBy: "000000000000",
+      });
+      await customer.save();
+      return customer;
+    }
+    return null;
+  } catch (e) {
+    console.log(e);
   }
-  return null
-  }catch (e){
-    console.log(e)
-  }
-}
+};
 
 userSchema.methods.generateAuthToken = async function () {
   const user = this;
-  const token = await jwt.sign(
+  const token = jwt.sign(
     { _id: user._id, role: (await Role.findById(user.role)).code },
     "SEC_JWT"
   );
@@ -175,6 +179,24 @@ userSchema.methods.generateAuthToken = async function () {
 
   return token;
 };
+
+userSchema.methods.generateToken = async function () {
+  const user = this;
+  //60 giây * 60phút = 3600
+  const token = jwt.sign(
+    { _id: user._id, role: (await Role.findById(user.role)).code },
+    "SEC_JWT",
+    { expiresIn: 60 * 5 }
+  );
+
+  //Save token to user.tokens
+  user.tokens.push({ token });
+  await user.save();
+  // console.log(user);
+  // console.log(await User.findById(user._id));
+  return token;
+};
+
 userSchema.statics.findByCredentials = async (email, password) => {
   //Check email
   const user = await User.findOne({ email });
@@ -193,10 +215,27 @@ userSchema.pre("save", async function (next) {
   //true: create new, có field password trong update
   //false: field không có trong create và update
   //!!! không compare pwd mà mình update với passHash trong db
+
+  //Clear all token expire
+  console.log(user.isModified("tokens"));
+  if (user.isModified("tokens")) {
+    console.log(">>>>>>>>>>>>>>>");
+    for (let i = 0; i < user.tokens.length; i++) {
+      console.log("index: ", i);
+      try {
+        jwt.verify(user.tokens[i].token, "SEC_JWT");
+        console.log("pass");
+      } catch (error) {
+        console.log(error.message);
+        user.tokens.splice(i, 1);
+        i--;
+      }
+    }
+  }
+
   if (user.isModified("password")) {
     user.password = await bcrypt.hash(user.password, 8);
   }
-
   next();
 });
 

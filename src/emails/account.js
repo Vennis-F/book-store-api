@@ -1,22 +1,34 @@
-const mailgun = require("mailgun-js")
-const DOMAIN = "sandbox5d30c40077f64e8bbf96e9e769dbb2df.mailgun.org"
-const mg = mailgun({
-  apiKey: "3d7206a8e248244482ab7364331d57f3-523596d9-b49c4cce",
-  domain: DOMAIN,
-})
+// const mailgun = require("mailgun-js");
+// //
+// const mg = mailgun({ apiKey: API_MAILGUN, domain: DOMAIN });
 
-const resetPassword = (email) => {
-  const data = {
-    from: "Excited User <me@samples.mailgun.org>",
-    to: `${email}`,
-    subject: "Bạn đã quên mật khẩu?",
-    text: "Hãy click vào đây link để đổi mật khẩu. I love You, 3000 <3",
-  }
+// const resetPassword = (email, url) => {
+//   const data = {
+//     from: "Excited User <me@samples.mailgun.org>",
+//     to: `${email}`,
+//     subject: "Bạn đã quên mật khẩu?",
+//     html: `<body>Ấn vào đây để thay đổi: <a href=${url}>CHANGE PASSWORD</a></body>`,
+//     // text: "Testing some Mailgun awesomness!",
+//   };
 
-  mg.messages().send(data, function (error, body) {
-    if (error) return console.log(error.message)
-    console.log(body)
-  })
-}
+//   mg.messages().send(data, function (error, body) {
+//     if (error) return console.log(error);
+//     console.log(body);
+//   });
+// };
 
-module.exports = { resetPassword }
+// const verifyAccount = (email, url) => {
+//   const data = {
+//     from: "Excited User <me@samples.mailgun.org>",
+//     to: `${email}`,
+//     subject: "Ê mày là chủ tài khoản à? Mới có thằng đầu buồi nào đó đổi á",
+//     html: `<body>Đúng rồi tao đây: <a href=${url}>ẤN VÀO EM ĐI CHỦ NHÂN</a></body>`,
+//   };
+
+//   mg.messages().send(data, function (error, body) {
+//     if (error) return console.log(error);
+//     console.log(body);
+//   });
+// };
+
+// module.exports = { resetPassword, verifyAccount };

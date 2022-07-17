@@ -2,18 +2,28 @@ const router = require("express").Router();
 const Post = require("../models/post");
 const User = require("../models/user");
 
-//customer & guest rout to check Blogs
+//customer & guest route to check Blogs
 //GET /blogs
 //pagination  ?limit=...&page=...
+//sortedBy=updatedAt_desc
 router.get("/", async (req, res) => {
+  console.log(req.query);
   try {
-    const { limit, page, featured, status } = req.query;
+    const { limit, page, featured, status, sortedBy } = req.query;
     const options = { sort: { createdAt: -1 } };
     const match = { status: true };
+    const sort = {};
 
     //Filter
     if (featured) match.featured = featured === "true";
     if (status) match.status = status === "true";
+
+    //sort
+    if (sortedBy) {
+      const parts = sortedBy.split("_"); // param: sortedBy=phone_desc
+      sort[parts[0]] = parts[1] === "desc" ? -1 : 1;
+      options.sort = sort;
+    }
 
     //Pagination
     if (limit) options.limit = parseInt(limit);
@@ -27,9 +37,11 @@ router.get("/", async (req, res) => {
       post.author = author.fullName;
     }
 
+    console.log(match, null, options);
     const count = await Post.count(match);
     res.send({ posts, count });
   } catch (e) {
+    console.log(e);
     res.status(500).send();
   }
 });
