@@ -12,8 +12,6 @@ router.get("/", async (req, res) => {
   const match = {};
   const sort = { "briefInformation.publicDate": -1 };
   const options = {
-    limit: 12,
-    skip: 0,
     sort,
   };
 
@@ -34,8 +32,8 @@ router.get("/", async (req, res) => {
   }
 
   try {
-    console.log(match, options);
     const products = await Product.find(match, null, options);
+    console.log(match, options);
     res.send(products);
   } catch (e) {
     res.status(500).send();
@@ -233,28 +231,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// //GET /products/category/:id
-// router.get("/category/:id", async (req, res) => {
-//   const cateId = req.body.categoryId;
-
-//   try {
-//     //Find and Check product exist:
-//     const product = await Product.findOne({
-//       _id: req.params.id,
-//       category: cateId,
-//     });
-//     if (!product) return res.sendStatus(404);
-
-//     res.send(product);
-//   } catch (e) {
-//     if (e.name === "CastError" && e.kind === "ObjectId")
-//       return res.status(400).send({ error: "Invalid ID" });
-//     res.status(500).send(e);
-//   }
-// });
-
 //PATCH /categories/:id (ALL field)
-
 router.put("/:id", async (req, res) => {
   let updates = updatesFilter(req.body);
   const allowUpdateds = [
@@ -303,9 +280,6 @@ router.put("/:id", async (req, res) => {
     res.status(400).send(e);
   }
 });
-
-//PATCH  /products/deactive
-//DELETE /products
 
 //POST /products
 router.post("/", auth, authorize("marketing"), async (req, res) => {

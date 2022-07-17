@@ -7,6 +7,7 @@ const router = require("express").Router();
 // ---------------Common--------------
 //GET /sliders
 router.get("/", async (req, res) => {
+  // console.log(req.query);
   try {
     const sliders = await Slider.find({ status: true });
     res.send(sliders);
@@ -57,13 +58,16 @@ router.get("/marketing/", auth, authorize("marketing"), async (req, res) => {
 });
 
 //GET /sliders/marketing/search?search=...
-// search: title, backlink
+//search: title, backlink
 //pagination:   ?limit=...&page=...
-
-router.post("/marketing/search",auth, authorize('marketing'),async (req, res) => {
-  try {
-    let {search, limit, page} =req.body
-    const options= {}
+router.post(
+  "/marketing/search",
+  auth,
+  authorize("marketing"),
+  async (req, res) => {
+    try {
+      let { search, limit, page } = req.body;
+      const options = {};
 
       //Paging
       if (limit) options.limit = parseInt(limit);

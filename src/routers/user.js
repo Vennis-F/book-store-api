@@ -2,12 +2,13 @@ const { auth } = require("../middlewares/auth");
 const authorize = require("../middlewares/authorize");
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
-const { resetPassword } = require("../emails/account");
+const { resetPassword, verifyAccount } = require("../emails/account");
 const Role = require("../models/role");
 const { isValidUpdate } = require("../utils/valid");
 const router = require("express").Router();
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
+const jwt = require("jsonwebtoken");
 
 ///////////////////////////////////GUEST
 //POST /user/guest
@@ -45,25 +46,59 @@ router.post("/register", async (req, res) => {
   const role = await Role.findOne({
     name: "customer",
   });
-  const user = new User({
-    ...req.body,
-    role: role._id,
-  });
-
   try {
     // //Delete session
     // req.session.destroy();
 
-    //auto create customer
-    await user.generateCustomer();
     //Create user
-    const token = await user.generateAuthToken();
+    const user = new User({
+      ...req.body,
+      role: role._id,
+      status: false,
+    });
+    await user.save();
+
+    //Send email verify
+    const token = await user.generateToken();
+    const url = `http://localhost:5000/verify-account/${token}`;
+    verifyAccount(user.email, url);
+
+    //Create user
     res.status(201).send({
       user,
-      token,
     });
   } catch (error) {
-    console.log(error);
+    console.log(error.message);
+    res.status(400).send({
+      error: error.message,
+    });
+  }
+});
+
+//POST /user/verify-account
+router.patch("/verify-account/:id", async (req, res) => {
+  const { id } = req.params;
+  const { token: tokenVerify } = req.body;
+  console.log(req.params);
+  try {
+    const user = await User.findById(id);
+    if (!user) return res.sendStatus(404);
+
+    //auto create customer
+    console.log(id);
+    await user.generateCustomer();
+    console.log("----");
+
+    //Clear token verify
+    console.log(tokenVerify);
+    user.tokens = user.tokens.filter(({ token }) => token !== tokenVerify);
+    user.status = true;
+    user.save();
+    res.status(200).send({
+      user,
+    });
+  } catch (error) {
+    console.log(error.message);
     res.status(400).send({
       error: error.message,
     });
@@ -81,6 +116,9 @@ router.post("/login", async (req, res) => {
       req.body.email,
       req.body.password
     );
+
+    if (!user.status) throw new Error("Your account is not active");
+
     const token = await user.generateAuthToken();
 
     res.send({
@@ -300,12 +338,76 @@ router.post("/forgotten", async (req, res) => {
 
     //Check email is exist
     const user = await User.findOne({ email });
-    console.log(user);
     if (!user) return res.sendStatus(404);
+
+    //Generate token
+    const token = await user.generateToken();
+    const url = `http://localhost:5000/reset-password/${token}`;
+
+    //Send email
+    resetPassword(user.email, url);
+
+    // console.log(user);
     res.send();
   } catch (error) {
     console.log(error);
     res.status(400).send({ error });
+  }
+});
+
+//PATCH  /user/reset-password
+router.patch("/reset-password", async (req, res) => {
+  console.log(req.body);
+  const { password, confirm, token } = req.body;
+
+  try {
+    //Check newPassword === confirm
+    if (password !== confirm)
+      throw new Error("Mật khẩu mới không giống mật khẩu cũ");
+
+    //Verify token
+    const decode = jwt.verify(token, "SEC_JWT");
+    const user = await User.findOne({ _id: decode._id, "tokens.token": token });
+
+    //Check user not exist
+    if (!user) return res.status(404).send({ error: "User is not existed" });
+
+    //Change new password
+    user.password = password;
+
+    //Clear token
+    const tokenReset = token;
+    user.tokens = user.tokens.filter(({ token }) => token !== tokenReset);
+
+    await user.save();
+    res.send(req.user);
+  } catch (error) {
+    return res.status(400).send({
+      error: error.message,
+    });
+  }
+});
+
+//POST /user/valid-token
+router.post("/valid-token", async (req, res) => {
+  const { token } = req.body;
+  try {
+    //Check token valid and not expire
+    jwt.verify(token, "SEC_JWT", (error, decoded) => {
+      if (error) throw new Error(error);
+
+      //Check user exist
+      User.findById(decoded._id, (err, user) => {
+        // console.log(decoded._id);
+        // console.log(user);
+        if (!user) return res.status(404).send({ error: "User not found" });
+        res.send(user);
+      });
+    });
+  } catch (error) {
+    console.log("....");
+    console.log(error.message);
+    res.status(404).send({ error: error.message });
   }
 });
 

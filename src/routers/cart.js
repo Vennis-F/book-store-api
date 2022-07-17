@@ -137,10 +137,7 @@ router.post("/", auth, authorize("customer"), async (req, res) => {
 //POST /cart (Add item to cart - not check cart item duplicated)
 router.post("/guest", async (req, res) => {
   let cart = req.session.cartGuest;
-  console.log(cart);
-  console.log(req.session, "--------");
 
-  // console.log(cart);
   try {
     //Check product exist and Check product available
     const product = await Product.findById(req.body.productId);
@@ -158,7 +155,7 @@ router.post("/guest", async (req, res) => {
 
     //Check cart duplicated
     let notCartItemDuplicated = true;
-    if (cart.items.length === 0) notCartItemDuplicated = true;
+    if (!cart || cart.items.length === 0) notCartItemDuplicated = true;
     else {
       notCartItemDuplicated = cart.items.every((item) => {
         console.log(item.product._id, req.body.productId);
@@ -166,15 +163,13 @@ router.post("/guest", async (req, res) => {
       });
     }
 
-    console.log(notCartItemDuplicated);
     if (notCartItemDuplicated === false) {
       //Case: cart item is duplicated
-      console.log(123);
       uCartItemGuest(cart, req.body.productId, product.quantity, qNeed);
     } else {
       //Case: Cart item is not exist
-      console.log(456);
       addCartItemGuest(cart, product, qNeed);
+      console.log("hihi");
     }
 
     //Fetch product information to product and id:
@@ -183,8 +178,7 @@ router.post("/guest", async (req, res) => {
 
     //Saved cart
     req.session.cartGuest = cart;
-    await req.session.save();
-    console.log(req.session.cartGuest);
+    req.session.save();
     res.status(201).send(req.session.cartGuest);
   } catch (error) {
     console.log(error.message);
