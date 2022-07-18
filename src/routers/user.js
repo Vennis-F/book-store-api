@@ -234,7 +234,7 @@ router.patch("/new-password", auth, async (req, res) => {
     //Check newPassword === confirm
     if (newPassword !== confirm)
       return res.status(400).send({
-        error: "Mật khẩu mới không giống mật khẩu cũ",
+        error: "Mật khẩu mới không giống mật khẩu confirm",
       });
 
     //Compare password to old password

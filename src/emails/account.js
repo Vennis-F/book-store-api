@@ -24,8 +24,8 @@ const verifyAccount = (email, url) => {
   const data = {
     from: "Excited User <me@samples.mailgun.org>",
     to: `${email}`,
-    subject: "Bạn đã quên mật khẩu?",
-    html: `<body>Ấn vào đây để đổi mật khẩu: <a href=${url}>ĐỔI MẬT KHẨU</a></body>`,
+    subject: "Xác nhận tài khoản bạn đăng ký?",
+    html: `<body>Ấn vào đây để xác nhận: <a href=${url}>XÁC NHẬN</a></body>`,
   };
 
   mg.messages().send(data, function (error, body) {
