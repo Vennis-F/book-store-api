@@ -71,10 +71,9 @@ router.get("/", auth, authorize("marketing"), async (req, res) => {
 //search by phone
 //Pagination:            ?limit=...&page=...
 
-router.post('/search', auth, authorize('marketing'), async (req,res) => {
-  let {search, limit, page} = req.body
-  const options={}
-
+router.post("/search", auth, authorize("marketing"), async (req, res) => {
+  let { search, limit, page } = req.body;
+  const options = {};
 
   try {
     //Paging
@@ -144,7 +143,7 @@ router.get("/:id", auth, authorize("marketing"), async (req, res) => {
     console.log(customer);
     res.send(customer);
   } catch (e) {
-    console.log(e)
+    console.log(e);
     if (e.name === "CastError" && e.kind === "ObjectId")
       return res.status(400).send({ error: "Invalid ID" });
     res.status(500).send(e);

@@ -1,7 +1,7 @@
-const mongoose = require("mongoose")
-const uniqueValidator = require("mongoose-unique-validator")
-const validator = require("validator")
-const mongoose_delete = require("mongoose-delete")
+const mongoose = require("mongoose");
+const uniqueValidator = require("mongoose-unique-validator");
+const validator = require("validator");
+const mongoose_delete = require("mongoose-delete");
 
 //Schema
 const categorySchema = mongoose.Schema({
@@ -11,13 +11,13 @@ const categorySchema = mongoose.Schema({
     unique: true,
     trim: true,
   },
-})
+});
 
-categorySchema.plugin(uniqueValidator)
+categorySchema.plugin(uniqueValidator);
 
 //Model
-const Category = mongoose.model("category", categorySchema)
-module.exports = Category
+const Category = mongoose.model("category", categorySchema);
+module.exports = Category;
 
 //Test
 // let cates = [
