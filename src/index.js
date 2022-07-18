@@ -1,6 +1,8 @@
 const express = require("express");
 const session = require("express-session");
 const cors = require("cors");
+const dotenv = require("dotenv");
+dotenv.config();
 const frameguard = require("frameguard");
 const MongoStore = require("connect-mongo");
 const userRouter = require("./routers/user");
@@ -15,8 +17,8 @@ const postRouter = require("./routers/post");
 const blogRouter = require("./routers/blog");
 const feedbackRouter = require("./routers/feedback");
 const sliderRouter = require("./routers/slider");
-const customerRouter= require('./routers/customer')
-const dashboardRouter = require('./routers/dashboard')
+const customerRouter = require("./routers/customer");
+const dashboardRouter = require("./routers/dashboard");
 const app = express();
 const port = process.env.PORT || 6969;
 
@@ -24,7 +26,7 @@ const port = process.env.PORT || 6969;
 app.use(frameguard({ action: "SAMEORIGIN" }));
 require("./db/mongoose");
 app.use(express.json());
-app.use(cors({ credentials: true, origin: 'http://localhost:5000' }));
+app.use(cors({ credentials: true, origin: "http://localhost:5000" }));
 
 //Session
 app.use(
@@ -57,22 +59,19 @@ app.use("/posts", postRouter);
 app.use("/blogs", blogRouter);
 app.use("/feedbacks", feedbackRouter);
 app.use("/sliders", sliderRouter);
-app.use("/customers",customerRouter);
-app.use("/dashboards",dashboardRouter);
-
-require("./models/slider");
+app.use("/customers", customerRouter);
+app.use("/dashboards", dashboardRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
-const { saveCateCrawl } = require("./utils/crawl-data/dataCategory");
-const {
-  createDataCrawl,
-  saveDataCrawl,
-} = require("./utils/crawl-data/dataProduct");
-const Product = require("./models/product");
-
+// const { saveCateCrawl } = require("./utils/crawl-data/dataCategory");
+// const {
+//   createDataCrawl,
+//   saveDataCrawl,
+// } = require("./utils/crawl-data/dataProduct");
+// const Product = require("./models/product");
 // Product.findOneAndUpdate(
 //   { _id: "62b1e79c671781b4fe64e11b" },
 //   {

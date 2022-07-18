@@ -197,13 +197,13 @@ router.get("/saleManager", auth, authorize("saleManager"), async (req, res) => {
 //GET /orders/saleManager/search?search=...
 //search by orderId, customerName
 //pagination          ?limit=...&page=...
-router.get(
+router.post(
   "/saleManager/search",
   auth,
   authorize("saleManager"),
   async (req, res) => {
     try {
-      let { limit, page, search } = req.query;
+      let { limit, page, search } = req.body;
       const options = {};
 
       //Paging
@@ -268,6 +268,7 @@ router.get(
       if (!order) return res.sendStatus(404);
 
       await order.populate({ path: "owner" });
+      await order.populate({ path: "saler" });
 
       for (let i = 0; i < order.items.length; i++) {
         await order.populate(`items.${i}.product`);
@@ -302,7 +303,7 @@ router.get(
 
 //PATCH /orders/saleManager/:id
 router.patch(
-  "/saleManager/:id",
+  "/saleManager",
   auth,
   authorize("saleManager"),
   async (req, res) => {
@@ -310,14 +311,17 @@ router.patch(
     const allowUpdateds = [
       "status",
       "saler", //saler ID
+      "id",
     ];
 
     if (!isValidUpdate(updates, allowUpdateds))
       return res.status(400).send({ error: "Invalid updates" });
 
     try {
-      const order = await Order.findById(req.params.id);
+      const order = await Order.findById(req.body.id);
 
+      console.log(req.body.id);
+      console.log(order);
       if (!order) return res.sendStatus(404);
 
       updates.forEach((update) => {
@@ -329,6 +333,7 @@ router.patch(
 
       res.send(order);
     } catch (e) {
+      console.log(e);
       if (e.name === "CastError" && e.kind === "ObjectId")
         return res.status(400).send({ error: "Invalid ID" });
       console.log(e);

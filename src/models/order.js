@@ -229,6 +229,11 @@ orderSchema.pre("save", async function (next) {
 orderSchema.pre("save", async function (next) {
   try {
     const order = this;
+    // console.log("++++++");
+    // console.log(order.isModified("status"));
+    // console.log(order.status === "success");
+    // console.log(order.status);
+    // console.log(order.isModified("status") && order.status === "success");
     if (order.isModified("status") && order.status === "success") {
       await order.populate("owner");
       const owner = order.owner;
@@ -236,7 +241,10 @@ orderSchema.pre("save", async function (next) {
         //Customer
         const customer = await Customer.findOne({ email: owner.email });
         customer.status = "customer";
+        console.log(customer.status);
         await customer.save();
+        console.log(customer);
+        console.log("-------------");
       } else {
         //Guest
         console.log("here");
