@@ -10,7 +10,7 @@ const resetPassword = (email, url) => {
     from: "Excited User <me@samples.mailgun.org>",
     to: `${email}`,
     subject: "Bạn đã quên mật khẩu?",
-    html: `<body>Ấn vào đây để thay đổi: <a href=${url}>CHANGE PASSWORD</a></body>`,
+    html: `<body>Ấn vào đây để thay đổi: <a href=${url}>ĐỔI MẬT KHẨU</a></body>`,
     // text: "Testing some Mailgun awesomness!",
   };
 
@@ -24,8 +24,8 @@ const verifyAccount = (email, url) => {
   const data = {
     from: "Excited User <me@samples.mailgun.org>",
     to: `${email}`,
-    subject: "Ê mày là chủ tài khoản à? Mới có thằng đầu buồi nào đó đổi á",
-    html: `<body>Đúng rồi tao đây: <a href=${url}>ẤN VÀO EM ĐI CHỦ NHÂN</a></body>`,
+    subject: "Bạn đã quên mật khẩu?",
+    html: `<body>Ấn vào đây để đổi mật khẩu: <a href=${url}>ĐỔI MẬT KHẨU</a></body>`,
   };
 
   mg.messages().send(data, function (error, body) {
