@@ -88,3 +88,10 @@ app.listen(port, () => {
 // Product.find({ $text: { $search: "Card" } })
 //   .then((result) => console.log(result))
 //   .catch((error) => console.log(error));
+const make = "Ford";
+
+const model = "Mustang";
+
+const car = { make, model };
+
+console.log(car);
