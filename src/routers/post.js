@@ -11,12 +11,13 @@ const { isValidUpdate } = require("../utils/valid");
 //this will auto update the author name
 router.post("/", auth, authorize("marketing"), async (req, res) => {
   const post = new Post(req.body);
+  // console.log(req.body);
   try {
     post.author = req.user._id;
     await post.save();
     res.sendStatus(201);
-  } catch (e) {
-    res.status(400).send(e);
+  } catch (error) {
+    res.status(400).send({ error: error.message });
   }
 });
 
@@ -58,12 +59,13 @@ router.get("/", async (req, res) => {
       const author = await User.findById(post.author);
       post.author = author.fullName;
     }
-    console.log("_-------");
+
     await Promise.all(
       posts.map((post) => {
         return post.populate({ path: "category", model: Category });
       })
     );
+
     res.send({ posts, count });
   } catch (e) {
     console.log(e);
@@ -80,7 +82,6 @@ router.post("/search", auth, authorize("marketing"), async (req, res) => {
     let { limit, page, search } = req.body;
     const options = {};
     let title = new RegExp(search, "gi");
-
 
     //Paging
     if (limit) options.limit = parseInt(limit);
@@ -119,6 +120,7 @@ router.get("/:id", auth, authorize("marketing"), async (req, res) => {
 
 //PATCH /posts/:id
 router.put("/", async (req, res) => {
+  console.log(req.body);
   const updates = Object.keys(req.body);
   const allowUpdateds = [
     "title",
@@ -138,7 +140,6 @@ router.put("/", async (req, res) => {
 
   try {
     const post = await Post.findById(req.body.id);
-    console.log(post);
 
     if (!post) return res.sendStatus(404);
 

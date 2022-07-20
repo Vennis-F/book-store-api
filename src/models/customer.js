@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const uniqueValidator = require("mongoose-unique-validator");
 const validator = require("validator");
+const User = require("./user");
 
 /////////////////////////////////////////////
 //Schema
@@ -75,11 +76,15 @@ customerSchema.plugin(uniqueValidator);
 
 customerSchema.pre("save", async function (next) {
   const customer = this;
-  if(customer.updatedBy.length===12||customer.updatedBy.length===24) await customer.populate('updatedBy')
+  if (
+    customer.updatedBy.toString().length === 12 ||
+    customer.updatedBy.toString().length === 24
+  )
+    await customer.populate({ path: "updatedBy" });
 
-  let updater
-  if(customer.updatedBy) updater= customer.updatedBy.fullName
-  else updater= 'Auto'
+  let updater;
+  if (customer.updatedBy) updater = customer.updatedBy.fullName;
+  else updater = "Auto";
 
   const history = {
     email: customer.email,

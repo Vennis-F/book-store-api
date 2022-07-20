@@ -18,12 +18,29 @@ const getRoleCode = async (name) => {
 
 //GET /orders/me (get all orders of user) - me
 router.get("/me", auth, authorize("customer"), async (req, res) => {
-  try {
-    let orders = await Order.find({ owner: req.user._id });
+  const { sortedBy, limit, page, featured, status } = req.query;
+  const match = { owner: req.user._id };
+  const options = { sort: { updatedAt: -1 } };
+  const sort = {};
 
-    if (orders.length !== 0) orders = await lstOrderPopulateOrderItem(orders);
-    console.log(orders);
-    res.send(orders);
+  //sort
+  if (sortedBy) {
+    const parts = sortedBy.split("_"); // param: sortedBy=phone_desc
+    sort[parts[0]] = parts[1] === "desc" ? -1 : 1;
+    options.sort = sort;
+  }
+
+  //Pagination
+  if (limit) options.limit = parseInt(limit);
+  if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
+
+  try {
+    let orders = await Order.find(match, null, options).populate({
+      path: `items.product`,
+    });
+    const count = await Order.count(match);
+    console.log(match, options);
+    res.send({ orders, count });
   } catch (e) {
     res.status(500).send(e);
   }
@@ -180,13 +197,13 @@ router.get("/saleManager", auth, authorize("saleManager"), async (req, res) => {
 //GET /orders/saleManager/search?search=...
 //search by orderId, customerName
 //pagination          ?limit=...&page=...
-router.get(
+router.post(
   "/saleManager/search",
   auth,
   authorize("saleManager"),
   async (req, res) => {
     try {
-      let { limit, page, search } = req.query;
+      let { limit, page, search } = req.body;
       const options = {};
 
       //Paging
@@ -251,6 +268,7 @@ router.get(
       if (!order) return res.sendStatus(404);
 
       await order.populate({ path: "owner" });
+      await order.populate({ path: "saler" });
 
       for (let i = 0; i < order.items.length; i++) {
         await order.populate(`items.${i}.product`);
@@ -285,7 +303,7 @@ router.get(
 
 //PATCH /orders/saleManager/:id
 router.patch(
-  "/saleManager/:id",
+  "/saleManager",
   auth,
   authorize("saleManager"),
   async (req, res) => {
@@ -293,28 +311,32 @@ router.patch(
     const allowUpdateds = [
       "status",
       "saler", //saler ID
+      "id",
     ];
 
     if (!isValidUpdate(updates, allowUpdateds))
       return res.status(400).send({ error: "Invalid updates" });
 
     try {
-      const order = await Order.findById(req.params.id);
+      const order = await Order.findById(req.body.id);
 
+      console.log(req.body.id);
+      console.log(order);
       if (!order) return res.sendStatus(404);
 
       updates.forEach((update) => {
         order[update] = req.body[update];
       });
-      if(!order.owner) order.owner='000000000000'
+      if (!order.owner) order.owner = "000000000000";
 
       await order.save();
 
       res.send(order);
     } catch (e) {
+      console.log(e);
       if (e.name === "CastError" && e.kind === "ObjectId")
         return res.status(400).send({ error: "Invalid ID" });
-        console.log(e)
+      console.log(e);
       res.status(400).send(e.message);
     }
   }
@@ -384,12 +406,10 @@ router.get("/saler", auth, authorize("saler"), async (req, res) => {
 //search by orderId, customerName
 //pagination          ?limit=...&page=...
 
-
-router.post('/saler/search', auth, authorize('saler'), async (req,res) => {
+router.post("/saler/search", auth, authorize("saler"), async (req, res) => {
   try {
-    let {limit, page, search} = req.body
-    const options={}
-
+    let { limit, page, search } = req.body;
+    const options = {};
 
     //Paging
     if (limit) options.limit = parseInt(limit);
@@ -456,11 +476,13 @@ router.get("/saler/:id", auth, authorize("saler"), async (req, res) => {
     if (!order) return res.sendStatus(404);
 
     await order.populate({ path: "owner" });
+    await order.populate({ path: "saler" });
 
     for (let i = 0; i < order.items.length; i++) {
       await order.populate(`items.${i}.product`);
     }
 
+    console.log(order);
     res.send(order);
   } catch (e) {
     if (e.name === "CastError" && e.kind === "ObjectId")

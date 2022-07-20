@@ -10,7 +10,7 @@ router.get("/", async (req, res) => {
   console.log(req.query);
   try {
     const { limit, page, featured, status, sortedBy } = req.query;
-    const options = { sort: { createdAt: -1 } };
+    const options = { sort: { updatedAt: -1 } };
     const match = { status: true };
     const sort = {};
 
@@ -29,9 +29,7 @@ router.get("/", async (req, res) => {
     if (limit) options.limit = parseInt(limit);
     if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
 
-    const posts = await Post.find(match, null, options).populate({
-      path: "author",
-    });
+    const posts = await Post.find(match, null, options);
     for (const post of posts) {
       const author = await User.findById(post.author);
       post.author = author.fullName;
@@ -51,6 +49,8 @@ router.get("/:id", async (req, res) => {
   try {
     //Find and Check blog exist:
     const blog = await Post.findById(req.params.id);
+    const author = await User.findById(blog.author);
+    blog.author = author.fullName;
     if (!blog) return res.sendStatus(404);
 
     res.send(blog);

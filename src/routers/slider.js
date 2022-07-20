@@ -50,6 +50,7 @@ router.get("/marketing/", auth, authorize("marketing"), async (req, res) => {
 
     const sliders = await Slider.find(match, null, options);
     const count = await Slider.count(match);
+    console.log(match, options);
     res.status(200).send({ sliders, count });
   } catch (error) {
     console.log(error);
