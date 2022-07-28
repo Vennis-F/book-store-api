@@ -17,7 +17,7 @@ const imageSchema = mongoose.Schema({
 })
 
 const userInfoSchema = mongoose.Schema({
-  name: {
+  fullName: {
     type: String,
     required: true,
     trim: true
@@ -80,14 +80,14 @@ const feedbackSchema = mongoose.Schema({
     validate(star) {
       if (!validator.isInt(String(star)))
         throw new Error(`${star} is not an integer value`)
-      if (star <= 0 || star >= 11) throw new Error("Star must between 1 to 10")
+      if (star < 0 || star >= 11) throw new Error("Star must between 0 to 10")
     },
   },
 
   //Ref
   product: {
     type: mongoose.Schema.Types.ObjectId,
-    required: true,
+    required: true, 
     ref: "product",
   }, // => productID
   user: {
@@ -101,17 +101,17 @@ const feedbackSchema = mongoose.Schema({
 })
 feedbackSchema.plugin(uniqueValidator)
 
-feedbackSchema.pre('save', async function(next) {
-  const feedback= this
-  const accountUser = await User.findOne({email:feedback.user.email})
-  const customer= await Customer.findOne({email:feedback.user.email})
-  
-  if(accountUser) {
-    feedback.user.userAccount=accountUser._id
+feedbackSchema.pre('save', async function (next) {
+  const feedback = this
+  const accountUser = await User.findOne({ email: feedback.user.email })
+  const customer = await Customer.findOne({ email: feedback.user.email })
+
+  if (accountUser) {
+    feedback.user.userAccount = accountUser._id
   }
 
-  if(!accountUser && !customer) {
-    feedback.status=false
+  if (!accountUser && !customer) {
+    feedback.status = false
   }
 
   next()

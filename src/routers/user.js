@@ -234,7 +234,7 @@ router.patch("/new-password", auth, async (req, res) => {
     //Check newPassword === confirm
     if (newPassword !== confirm)
       return res.status(400).send({
-        error: "Mật khẩu mới không giống mật khẩu cũ",
+        error: "Mật khẩu mới không giống mật khẩu confirm",
       });
 
     //Compare password to old password
@@ -424,14 +424,13 @@ router.get("/admin/roles", auth, authorize("admin"), async (req, res) => {
 //POST /user/admin
 router.post("/admin", auth, authorize("admin"), async (req, res) => {
   const user = new User(req.body);
-  console.log(user);
+  console.log(user, "++++++");
   try {
     await user.save();
     res.sendStatus(201);
-  } catch (e) {
-    console.log(e);
-    console.log(e.message);
-    res.status(500).send(e);
+  } catch (error) {
+    console.log(error.message);
+    res.status(400).send({ error: error.message });
   }
 });
 
@@ -454,7 +453,6 @@ router.get("/admin", auth, authorize("admin"), async (req, res) => {
     };
 
     //filter
-
     if (status) {
       match.status = status === "true";
     }
@@ -485,6 +483,7 @@ router.get("/admin", auth, authorize("admin"), async (req, res) => {
       path: "role",
       select: "name",
     });
+    const count = await User.countDocuments(match);
 
     function compareAsc(a, b) {
       if (a.role.name < b.role.name) {
@@ -525,7 +524,7 @@ router.get("/admin", auth, authorize("admin"), async (req, res) => {
 
     res.send({
       users,
-      count: users.length,
+      count,
     });
   } catch (e) {
     res.status(500).send(e.message);
@@ -633,6 +632,7 @@ router.get("/admin/getOne", auth, authorize("admin"), async (req, res) => {
 
 //PUT /user/admin/:id
 router.put("/admin/", auth, authorize("admin"), async (req, res) => {
+  console.log(req.body);
   const updates = Object.keys(req.body);
   const allowUpdateds = [
     "status",

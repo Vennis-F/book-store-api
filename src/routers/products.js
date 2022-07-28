@@ -60,9 +60,7 @@ router.post("/search/marketing", async (req, res) => {
     console.log(req.body);
     const products = await Product.find({
       $text: { $search: req.body.searchText },
-    });
-    // .skip(0)
-    // .limit(10);
+    }).populate({ path: "category" });
     res.send(products);
   } catch (e) {
     console.log(e);
@@ -77,9 +75,7 @@ router.get("/category/:categoryId", async (req, res) => {
   const match = { category: cateId };
   const sort = { "briefInformation.publicDate": -1 };
   const options = {
-    limit: 12,
-    skip: 0,
-    // sort,
+    sort,
   };
 
   //Product status
@@ -94,12 +90,13 @@ router.get("/category/:categoryId", async (req, res) => {
     sort["briefInformation.publicDate"] = publicDate === "desc" ? -1 : 1;
   }
 
-  console.log(match);
-  console.log(options);
+  console.log(match, options, "++++");
   try {
     //Find and Check product exist:
     const product = await Product.find(match, null, options);
-    res.send(product);
+    const count = await Product.countDocuments(match);
+    console.log(count);
+    res.send({ product, count });
   } catch (e) {
     if (e.name === "CastError" && e.kind === "ObjectId")
       return res.status(400).send({ error: "Invalid ID" });
@@ -233,6 +230,7 @@ router.get("/:id", async (req, res) => {
 
 //PATCH /categories/:id (ALL field)
 router.put("/:id", async (req, res) => {
+  console.log(req.body);
   let updates = updatesFilter(req.body);
   const allowUpdateds = [
     "title",
@@ -275,23 +273,24 @@ router.put("/:id", async (req, res) => {
     await product.save({ validateModifiedOnly: true });
     res.send(product);
   } catch (e) {
+    console.log(e);
     if (e.name === "CastError" && e.kind === "ObjectId")
       return res.status(400).send({ error: "Invalid ID" });
-    res.status(400).send(e);
+    res.status(400).send({ error: e.message });
   }
 });
 
 //POST /products
 router.post("/", auth, authorize("marketing"), async (req, res) => {
-  console.log(req.body);
   const product = new Product({ ...req.body });
   console.log("-----------------------");
   console.log(product);
   try {
     const productSaved = await product.save();
     res.status(201).send(productSaved);
-  } catch (e) {
-    res.status(400).send(e);
+  } catch (error) {
+    console.log(error.message);
+    res.status(400).send({ error: error.message });
   }
 });
 

@@ -132,7 +132,7 @@ userSchema.methods.toJSON = function () {
 
   delete userProfile.password;
   delete userProfile.tokens;
-  delete userProfile.avatar;
+  // delete userProfile.avatar;
 
   return userProfile;
 };
