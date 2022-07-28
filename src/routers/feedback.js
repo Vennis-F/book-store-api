@@ -9,20 +9,18 @@ const router = require("express").Router();
 const { isValidUpdate, updatesFilter } = require("../utils/valid");
 
 
-        //////Common  
+//////Common  
 //POST /feedbacks/product/:productID
 router.post("/product/:productID", async (req, res) => {
   const feedback = new Feedback({ ...req.body });
 
   try {
-    const product= await Product.findById(req.params.productID)
-    if(!product) return res.status(404).send()
+    const product = await Product.findById(req.params.productID)
+    if (!product) return res.status(404).send()
 
-    feedback.product= product._id
-
-    const userInfo = await User.findOne({email: feedback.user.email})
-  
-    if(userInfo) {
+    feedback.product = product._id
+    const userInfo = await User.findOne({ email: feedback.user.email })
+    if (userInfo) {
       feedback.user.userAccount = userInfo._id
     }
 
@@ -36,8 +34,8 @@ router.post("/product/:productID", async (req, res) => {
 
 //GET /feedbacks/product/:productID
 router.get("/product/:productID", async (req, res) => {
-  try{
-    const feedbacks = await Feedback.find({product: req.params.productID, status: true})
+  try {
+    const feedbacks = await Feedback.find({ product: req.params.productID, status: true })
     res.send(feedbacks)
   } catch (e) {
     res.status(500).send();
@@ -45,31 +43,31 @@ router.get("/product/:productID", async (req, res) => {
 });
 
 
-        ////////////////////Login/////////////
+////////////////////Login/////////////
 //POST /feedbacks/order/:orderID?productID=...
-router.post("/order/:orderID",auth, authorize('customer'), async (req, res) => {
-  const {productID} = req.query 
+router.post("/order/:orderID", auth, authorize('customer'), async (req, res) => {
+  const { productID } = req.query
   const feedback = new Feedback({ ...req.body });
 
   try {
-    if(!productID) return res.status(400).send({e:"Product id missing"})
+    if (!productID) return res.status(400).send({ e: "Product id missing" })
 
-    const order= await Order.findById(req.params.orderID)
-    if(!order) return res.status(404).send({e:"Order not found"})
+    const order = await Order.findById(req.params.orderID)
+    if (!order) return res.status(404).send({ e: "Order not found" })
 
     const orderProduct = order.items.filter((value) => {
-      const IdProduct=new mongoose.Types.ObjectId(productID)
+      const IdProduct = new mongoose.Types.ObjectId(productID)
       if (value.product.equals(IdProduct)) return IdProduct
     })
-    if(orderProduct.length===0) return res.status(404).send({e:"Product not found in The Order"})
+    if (orderProduct.length === 0) return res.status(404).send({ e: "Product not found in The Order" })
 
-    const owner= await User.findById(order.owner)
-    if(!owner || (owner.email!==req.user.email) ) return res.status(400).send({e:"Unauthorized"})
+    const owner = await User.findById(order.owner)
+    if (!owner || (owner.email !== req.user.email)) return res.status(400).send({ e: "Unauthorized" })
 
-    
-    feedback.order= order._id
-    feedback.product= productID
-    
+
+    feedback.order = order._id
+    feedback.product = productID
+
     await feedback.save();
     res.status(201).send(feedback);
   } catch (e) {
@@ -80,10 +78,10 @@ router.post("/order/:orderID",auth, authorize('customer'), async (req, res) => {
 
 
 //GET /feedbacks/order/:orderID
-router.get("/order/:orderID",auth, authorize('customer'), async (req, res) => {
+router.get("/order/:orderID", auth, authorize('customer'), async (req, res) => {
   try {
-      const feedbacks = await Feedback.find({order:req.params.orderID, "user.userAccount":req.user._id})
-      res.send(feedbacks)
+    const feedbacks = await Feedback.find({ order: req.params.orderID, "user.userAccount": req.user._id })
+    res.send(feedbacks)
   } catch (e) {
     console.log(e);
     res.status(500).send();
@@ -91,7 +89,7 @@ router.get("/order/:orderID",auth, authorize('customer'), async (req, res) => {
 });
 
 //PATCh /feedbacks/:feedbackID
-router.patch("/:feedbackId",auth, authorize('customer'), async (req, res) => {
+router.patch("/:feedbackId", auth, authorize('customer'), async (req, res) => {
   const updates = Object.keys(req.body);
   const allowUpdateds = [
     "content",
@@ -108,7 +106,7 @@ router.patch("/:feedbackId",auth, authorize('customer'), async (req, res) => {
     if (!feedback)
       return res.sendStatus(404);
 
-    if(feedback.user.email !== req.user.email) {
+    if (feedback.user.email !== req.user.email) {
       return res.sendStatus(401)
     }
 
@@ -126,18 +124,18 @@ router.patch("/:feedbackId",auth, authorize('customer'), async (req, res) => {
 });
 
 
-            //////////////////Marketing/////////////
+//////////////////Marketing/////////////
 //GET /feedbacks/marketing  
-              //Feedback lists  
+//Feedback lists  
 //filter : star, product, status
-                                  //?star=...&product=...&status=...
+//?star=...&product=...&status=...
 //sortable: fullName, productName, star, status
-                                  //?sortedBy=fullName_desc //sortedBy=status_asc
-router.get("/marketing",auth,authorize('marketing'), async (req, res) => {
+//?sortedBy=fullName_desc //sortedBy=status_asc
+router.get("/marketing", auth, authorize('marketing'), async (req, res) => {
   try {
     const { star, product, status, sortedBy, limit, page } = req.query
     const fbMatch = {}
-    const match={}
+    const match = {}
     const sort = {}
     const options = { sort }
 
@@ -147,20 +145,20 @@ router.get("/marketing",auth,authorize('marketing'), async (req, res) => {
       match.status = (status === "true")
     }
 
-    if(star) {
-      match.star= parseInt(star)
+    if (star) {
+      match.star = parseInt(star)
     }
 
 
     //sort
     if (sortedBy) {
       const parts = sortedBy.split('_')       // param: sortedBy=auhor_desc 
-      if(parts[0]===('fullName')){
-        sort['user.name']=(parts[1] === 'desc' ? -1 : 1) 
+      if (parts[0] === ('fullName')) {
+        sort['user.name'] = (parts[1] === 'desc' ? -1 : 1)
       } else {
-        sort[parts[0]]=(parts[1] === 'desc' ? -1 : 1) 
+        sort[parts[0]] = (parts[1] === 'desc' ? -1 : 1)
       }
-      
+
       options.sort = sort
     }
 
@@ -168,46 +166,46 @@ router.get("/marketing",auth,authorize('marketing'), async (req, res) => {
     if (limit) options.limit = parseInt(limit)
     if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
 
-    const feedbacks = await Feedback.find(match,null,options).populate({ path: 'product', select: 'title'});
+    const feedbacks = await Feedback.find(match, null, options).populate({ path: 'product', select: 'title' });
 
-    function compareAsc( a, b ) {
-      if ( a.product.title < b.product.title ){
+    function compareAsc(a, b) {
+      if (a.product.title < b.product.title) {
         return -1;
       }
-      if ( a.product.title > b.product.title ){
+      if (a.product.title > b.product.title) {
         return 1;
       }
       return 0;
     }
 
-    function compareDesc( a, b ) {
-      if ( a.product.title < b.product.title ){
+    function compareDesc(a, b) {
+      if (a.product.title < b.product.title) {
         return 1;
       }
-      if ( a.product.title > b.product.title ){
+      if (a.product.title > b.product.title) {
         return -1;
       }
       return 0;
     }
 
     //sort product
-    if(sort.productName) {
-      if(sort.productName===1)
+    if (sort.productName) {
+      if (sort.productName === 1)
         feedbacks.sort(compareAsc)
       else feedbacks.sort(compareDesc)
     }
 
     //product filter
-    if(product) {
-      const sendFeedbacks=feedbacks.filter((feedback) => {
-        if(feedback.product.title.match(new RegExp(product))) 
+    if (product) {
+      const sendFeedbacks = feedbacks.filter((feedback) => {
+        if (feedback.product.title.match(new RegExp(product)))
           return feedback
       })
-      return res.send({ feedbacks:sendFeedbacks, count: sendFeedbacks.length });
+      return res.send({ feedbacks: sendFeedbacks, count: sendFeedbacks.length });
     }
 
     const count = await Feedback.countDocuments();
-    
+
     res.send({ feedbacks, count });
   } catch (e) {
     res.status(500).send(e.message);
@@ -217,39 +215,39 @@ router.get("/marketing",auth,authorize('marketing'), async (req, res) => {
 //GET /feedbacks/marketing/search?search=...
 //search by fullName, content     
 //pagination          ?limit=...&page=...
-router.get('/marketing/search', auth, authorize('marketing'), async (req,res) => {
+router.get('/marketing/search', auth, authorize('marketing'), async (req, res) => {
   try {
-    let {limit, page, search} = req.query
-    const options={}
-    
-    //Paging
-    if(limit) options.limit = parseInt(limit) 
-     else{limit=5}
-    if(page) options.skip= parseInt(limit) * (parseInt(page) - 1)
-      else {
-        page=1
-        options.skip= parseInt(limit) * (parseInt(page) - 1)
-      }
+    let { limit, page, search } = req.query
+    const options = {}
 
-    const searchResult=[]
-    const checkById=[]
+    //Paging
+    if (limit) options.limit = parseInt(limit)
+    else { limit = 5 }
+    if (page) options.skip = parseInt(limit) * (parseInt(page) - 1)
+    else {
+      page = 1
+      options.skip = parseInt(limit) * (parseInt(page) - 1)
+    }
+
+    const searchResult = []
+    const checkById = []
 
     //search
-      const name= new RegExp(search,'gi')
-      const feedbacks = await Feedback.find({'user.name':name},null, options)
-      for(const feedback of feedbacks) {
-        if(checkById.length>=limit) break
-        if(!checkById.includes(feedback._id.toString())){
-          checkById.push(feedback._id.toString())
-          searchResult.push(feedback)
-        }
+    const name = new RegExp(search, 'gi')
+    const feedbacks = await Feedback.find({ 'user.name': name }, null, options)
+    for (const feedback of feedbacks) {
+      if (checkById.length >= limit) break
+      if (!checkById.includes(feedback._id.toString())) {
+        checkById.push(feedback._id.toString())
+        searchResult.push(feedback)
       }
-      
-    if(checkById<limit-1) {
-      const feedbacks = await Feedback.find({content:new RegExp(search,'gi')},null, options)
-      for(const feedback of feedbacks) {
-        if(checkById.length>=limit) break
-        if(!checkById.includes(feedback._id.toString())){
+    }
+
+    if (checkById < limit - 1) {
+      const feedbacks = await Feedback.find({ content: new RegExp(search, 'gi') }, null, options)
+      for (const feedback of feedbacks) {
+        if (checkById.length >= limit) break
+        if (!checkById.includes(feedback._id.toString())) {
           checkById.push(feedback._id.toString())
           searchResult.push(feedback)
         }
@@ -267,7 +265,7 @@ router.get('/marketing/search', auth, authorize('marketing'), async (req,res) =>
 router.get("/marketing/:id", auth, authorize("marketing"), async (req, res) => {
   try {
     //Find and Check post exist:
-    const feeback = await Feedback.findById(req.params.id).populate({path:'product',select: 'title'});
+    const feeback = await Feedback.findById(req.params.id).populate({ path: 'product', select: 'title' });
     if (!feeback) return res.sendStatus(404);
 
     res.send(feeback);
@@ -282,7 +280,7 @@ router.get("/marketing/:id", auth, authorize("marketing"), async (req, res) => {
 router.patch("/marketing/:id", async (req, res) => {
   const updates = Object.keys(req.body);
   const allowUpdateds = [
-   "status"
+    "status"
   ];
 
   if (!isValidUpdate(updates, allowUpdateds))
