@@ -1,8 +1,8 @@
-const mongoose = require("mongoose")
-const uniqueValidator = require("mongoose-unique-validator")
-const validator = require("validator")
-const User = require("./user")
-const Customer = require("./customer")
+const mongoose = require("mongoose");
+const uniqueValidator = require("mongoose-unique-validator");
+const validator = require("validator");
+const User = require("./user");
+const Customer = require("./customer");
 
 //SubSchema
 const imageSchema = mongoose.Schema({
@@ -12,21 +12,21 @@ const imageSchema = mongoose.Schema({
   },
   imageAltDoc: {
     type: String,
-    trim: true
-  }
-})
+    trim: true,
+  },
+});
 
 const userInfoSchema = mongoose.Schema({
   name: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
   },
   gender: {
     type: String,
     trim: true,
     enum: ["M", "F", "D"],
-    required: true
+    required: true,
   },
   email: {
     type: String,
@@ -35,7 +35,7 @@ const userInfoSchema = mongoose.Schema({
     lowercase: true,
 
     validate(email) {
-      if (!validator.isEmail(email)) throw new Error("Email is invalid")
+      if (!validator.isEmail(email)) throw new Error("Email is invalid");
     },
   },
   phone: {
@@ -45,16 +45,16 @@ const userInfoSchema = mongoose.Schema({
 
     validate(phone) {
       if (!validator.isMobilePhone(phone)) {
-        throw new Error("This is not a phone number")
+        throw new Error("This is not a phone number");
       }
     },
   },
   //Ref to user account if they have
   userAccount: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User"
+    ref: "User",
   }, // => User id
-})
+});
 
 //////////////////////////////////////////////////////////////////////////
 //Schema
@@ -79,8 +79,8 @@ const feedbackSchema = mongoose.Schema({
 
     validate(star) {
       if (!validator.isInt(String(star)))
-        throw new Error(`${star} is not an integer value`)
-      if (star <= 0 || star >= 11) throw new Error("Star must between 1 to 10")
+        throw new Error(`${star} is not an integer value`);
+      if (star <= 0 || star >= 11) throw new Error("Star must between 1 to 10");
     },
   },
 
@@ -92,34 +92,34 @@ const feedbackSchema = mongoose.Schema({
   }, // => productID
   user: {
     type: userInfoSchema,
-    required: true
+    required: true,
   }, // => userID
   order: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Order",
-  } // => orderID
-})
-feedbackSchema.plugin(uniqueValidator)
+  }, // => orderID
+});
+feedbackSchema.plugin(uniqueValidator);
 
-feedbackSchema.pre('save', async function(next) {
-  const feedback= this
-  const accountUser = await User.findOne({email:feedback.user.email})
-  const customer= await Customer.findOne({email:feedback.user.email})
-  
-  if(accountUser) {
-    feedback.user.userAccount=accountUser._id
+feedbackSchema.pre("save", async function (next) {
+  const feedback = this;
+  const accountUser = await User.findOne({ email: feedback.user.email });
+  const customer = await Customer.findOne({ email: feedback.user.email });
+
+  if (accountUser) {
+    feedback.user.userAccount = accountUser._id;
   }
 
-  if(!accountUser && !customer) {
-    feedback.status=false
+  if (!accountUser && !customer) {
+    feedback.status = false;
   }
 
-  next()
-})
+  next();
+});
 
 //Model
-const Feedback = mongoose.model("Feedback", feedbackSchema)
-module.exports = Feedback
+const Feedback = mongoose.model("Feedback", feedbackSchema);
+module.exports = Feedback;
 
 //Test
 // const feedback = new Feedback({
