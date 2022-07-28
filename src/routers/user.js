@@ -2,8 +2,13 @@ const { auth } = require("../middlewares/auth");
 const authorize = require("../middlewares/authorize");
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
-const { resetPassword, verifyAccount } = require("../emails/account");
+const {
+  resetPassword,
+  verifyAccount,
+  passwordNewAccount,
+} = require("../emails/account");
 const Role = require("../models/role");
+const Order = require("../models/order");
 const { isValidUpdate } = require("../utils/valid");
 const router = require("express").Router();
 const mongoose = require("mongoose");
@@ -168,6 +173,30 @@ router.post("/logoutAll", auth, async (req, res) => {
   } catch (e) {
     console.log(e);
     res.status(500).send();
+  }
+});
+
+//GET /user/salers
+router.get("/salers", async (req, res) => {
+  try {
+    const roleSaler = await Role.findOne({ name: "saler", status: true });
+    const salers = await User.find({ role: roleSaler._id }).populate({
+      path: "orders",
+    });
+    const newSalers = [];
+    salers.forEach((saler) => {
+      let numStatus = { submitted: 0, cancelled: 0, success: 0 };
+      saler.orders.forEach((order) => numStatus[order.status]++);
+      newSalers.push({
+        _id: saler._id,
+        fullName: saler.fullName,
+        orders: numStatus,
+      });
+    });
+    res.send(newSalers);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).send({ error: error.message });
   }
 });
 
@@ -424,9 +453,12 @@ router.get("/admin/roles", auth, authorize("admin"), async (req, res) => {
 //POST /user/admin
 router.post("/admin", auth, authorize("admin"), async (req, res) => {
   const user = new User(req.body);
-  console.log(user, "++++++");
+  const { password } = req.body;
   try {
     await user.save();
+
+    //send email password:
+    passwordNewAccount(user.email, password);
     res.sendStatus(201);
   } catch (error) {
     console.log(error.message);

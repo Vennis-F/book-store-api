@@ -10,6 +10,7 @@ const { isValidUpdate, updatesFilter } = require("../utils/valid");
 
 
 //////Common  
+
 //POST /feedbacks/product/:productID
 router.post("/product/:productID", async (req, res) => {
   const feedback = new Feedback({ ...req.body });
@@ -22,25 +23,29 @@ router.post("/product/:productID", async (req, res) => {
     const userInfo = await User.findOne({ email: feedback.user.email })
     if (userInfo) {
       feedback.user.userAccount = userInfo._id
+
     }
 
     await feedback.save();
     res.status(201).send(feedback);
   } catch (e) {
     res.status(400).send(e);
-    console.log(e)
+    console.log(e);
   }
 });
 
 //GET /feedbacks/product/:productID
 router.get("/product/:productID", async (req, res) => {
   try {
+
     const feedbacks = await Feedback.find({ product: req.params.productID, status: true })
     res.send(feedbacks)
+
   } catch (e) {
     res.status(500).send();
   }
 });
+
 
 
 ////////////////////Login/////////////
@@ -73,15 +78,20 @@ router.post("/order/:orderID", auth, authorize('customer'), async (req, res) => 
   } catch (e) {
     res.status(500).send(e);
     console.log(e)
-  }
-});
 
+  }
+);
 
 //GET /feedbacks/order/:orderID
-router.get("/order/:orderID", auth, authorize('customer'), async (req, res) => {
+
+router.get("/order/:orderID", auth, authorize("customer"), async (req, res) => {
   try {
-    const feedbacks = await Feedback.find({ order: req.params.orderID, "user.userAccount": req.user._id })
-    res.send(feedbacks)
+    const feedbacks = await Feedback.find({
+      order: req.params.orderID,
+      "user.userAccount": req.user._id,
+    });
+    res.send(feedbacks);
+
   } catch (e) {
     console.log(e);
     res.status(500).send();
@@ -90,47 +100,46 @@ router.get("/order/:orderID", auth, authorize('customer'), async (req, res) => {
 
 //PATCh /feedbacks/:feedbackID
 router.patch("/:feedbackId", auth, authorize('customer'), async (req, res) => {
+
   const updates = Object.keys(req.body);
-  const allowUpdateds = [
-    "content",
-    "star",
-    "images",
-  ];
+  const allowUpdateds = ["content", "star", "images"];
 
   if (!isValidUpdate(updates, allowUpdateds))
     return res.status(400).send({ error: "Invalid updates" });
 
   try {
-    const feedback = await Feedback.findById(req.params.feedbackId)
+    const feedback = await Feedback.findById(req.params.feedbackId);
 
-    if (!feedback)
-      return res.sendStatus(404);
+    if (!feedback) return res.sendStatus(404);
 
     if (feedback.user.email !== req.user.email) {
+
       return res.sendStatus(401)
+
     }
 
-
     updates.forEach((update) => {
-      feedback[update] = req.body[update]
-    })
-    await feedback.save()
+      feedback[update] = req.body[update];
+    });
+    await feedback.save();
 
     res.send(feedback);
   } catch (e) {
     res.status(400).send(e);
-    console.log(e)
+    console.log(e);
   }
 });
 
 
 //////////////////Marketing/////////////
-//GET /feedbacks/marketing  
-//Feedback lists  
+//GET /feedbacks/marketing
+//Feedback lists
+
 //filter : star, product, status
 //?star=...&product=...&status=...
 //sortable: fullName, productName, star, status
 //?sortedBy=fullName_desc //sortedBy=status_asc
+
 router.get("/marketing", auth, authorize('marketing'), async (req, res) => {
   try {
     const { star, product, status, sortedBy, limit, page } = req.query
@@ -139,19 +148,22 @@ router.get("/marketing", auth, authorize('marketing'), async (req, res) => {
     const sort = {}
     const options = { sort }
 
+
     //filter
 
     if (status) {
-      match.status = (status === "true")
+      match.status = status === "true";
     }
 
     if (star) {
-      match.star = parseInt(star)
-    }
 
+      match.star = parseInt(star)
+
+    }
 
     //sort
     if (sortedBy) {
+
       const parts = sortedBy.split('_')       // param: sortedBy=auhor_desc 
       if (parts[0] === ('fullName')) {
         sort['user.name'] = (parts[1] === 'desc' ? -1 : 1)
@@ -160,13 +172,19 @@ router.get("/marketing", auth, authorize('marketing'), async (req, res) => {
       }
 
       options.sort = sort
+
     }
 
     //Paging
-    if (limit) options.limit = parseInt(limit)
+    if (limit) options.limit = parseInt(limit);
     if (page) options.skip = parseInt(limit) * (parseInt(page) - 1);
 
-    const feedbacks = await Feedback.find(match, null, options).populate({ path: 'product', select: 'title' });
+
+    const feedbacks = await Feedback.find(match, null, options).populate({
+      path: "product",
+      select: "title",
+    });
+
 
     function compareAsc(a, b) {
       if (a.product.title < b.product.title) {
@@ -190,14 +208,17 @@ router.get("/marketing", auth, authorize('marketing'), async (req, res) => {
 
     //sort product
     if (sort.productName) {
+
       if (sort.productName === 1)
         feedbacks.sort(compareAsc)
       else feedbacks.sort(compareDesc)
+
     }
 
     //product filter
     if (product) {
       const sendFeedbacks = feedbacks.filter((feedback) => {
+
         if (feedback.product.title.match(new RegExp(product)))
           return feedback
       })
@@ -213,8 +234,9 @@ router.get("/marketing", auth, authorize('marketing'), async (req, res) => {
 });
 
 //GET /feedbacks/marketing/search?search=...
-//search by fullName, content     
+//search by fullName, content
 //pagination          ?limit=...&page=...
+
 router.get('/marketing/search', auth, authorize('marketing'), async (req, res) => {
   try {
     let { limit, page, search } = req.query
@@ -250,22 +272,24 @@ router.get('/marketing/search', auth, authorize('marketing'), async (req, res) =
         if (!checkById.includes(feedback._id.toString())) {
           checkById.push(feedback._id.toString())
           searchResult.push(feedback)
+
         }
       }
+
+      res.send(searchResult);
+    } catch (error) {
+      res.status(500).send(error);
     }
-
-    res.send(searchResult)
-
-  } catch (error) {
-    res.status(500).send(error)
   }
-})
+);
 
 //GET /feedbacks/marketing/:id
 router.get("/marketing/:id", auth, authorize("marketing"), async (req, res) => {
   try {
     //Find and Check post exist:
+
     const feeback = await Feedback.findById(req.params.id).populate({ path: 'product', select: 'title' });
+
     if (!feeback) return res.sendStatus(404);
 
     res.send(feeback);
@@ -279,18 +303,19 @@ router.get("/marketing/:id", auth, authorize("marketing"), async (req, res) => {
 //PATCH /feedbacks/marketing/:id
 router.patch("/marketing/:id", async (req, res) => {
   const updates = Object.keys(req.body);
+
   const allowUpdateds = [
     "status"
   ];
+
 
   if (!isValidUpdate(updates, allowUpdateds))
     return res.status(400).send({ error: "Invalid updates" });
 
   try {
-    const feeback = await Feedback.findByIdAndUpdate(req.params.id, req.body)
+    const feeback = await Feedback.findByIdAndUpdate(req.params.id, req.body);
 
-    if (!feeback)
-      return res.sendStatus(404);
+    if (!feeback) return res.sendStatus(404);
 
     res.send(feeback);
   } catch (e) {
@@ -301,17 +326,20 @@ router.patch("/marketing/:id", async (req, res) => {
 });
 
 //DELETE /feedbacks/marketing/:id
-router.delete('/marketing/:id', auth, authorize('marketing'), async (req, res) => {
-  try {
-    const feeback = await Feedback.findByIdAndDelete(req.params.id)
-    if (!feeback)
-      return res.status(404).send()
+router.delete(
+  "/marketing/:id",
+  auth,
+  authorize("marketing"),
+  async (req, res) => {
+    try {
+      const feeback = await Feedback.findByIdAndDelete(req.params.id);
+      if (!feeback) return res.status(404).send();
 
-    res.send(feeback)
-  } catch (error) {
-    res.status(500).send(error)
+      res.send(feeback);
+    } catch (error) {
+      res.status(500).send(error);
+    }
   }
-})
-
+);
 
 module.exports = router;
