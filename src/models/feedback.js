@@ -17,7 +17,7 @@ const imageSchema = mongoose.Schema({
 });
 
 const userInfoSchema = mongoose.Schema({
-  name: {
+  fullName: {
     type: String,
     required: true,
     trim: true,
@@ -87,7 +87,7 @@ const feedbackSchema = mongoose.Schema({
   //Ref
   product: {
     type: mongoose.Schema.Types.ObjectId,
-    required: true,
+    required: true, 
     ref: "product",
   }, // => productID
   user: {
@@ -97,21 +97,23 @@ const feedbackSchema = mongoose.Schema({
   order: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Order",
-  }, // => orderID
-});
-feedbackSchema.plugin(uniqueValidator);
 
-feedbackSchema.pre("save", async function (next) {
-  const feedback = this;
-  const accountUser = await User.findOne({ email: feedback.user.email });
-  const customer = await Customer.findOne({ email: feedback.user.email });
+  } // => orderID
+})
+feedbackSchema.plugin(uniqueValidator)
+
+feedbackSchema.pre('save', async function (next) {
+  const feedback = this
+  const accountUser = await User.findOne({ email: feedback.user.email })
+  const customer = await Customer.findOne({ email: feedback.user.email })
 
   if (accountUser) {
-    feedback.user.userAccount = accountUser._id;
+    feedback.user.userAccount = accountUser._id
   }
 
   if (!accountUser && !customer) {
-    feedback.status = false;
+    feedback.status = false
+
   }
 
   next();
