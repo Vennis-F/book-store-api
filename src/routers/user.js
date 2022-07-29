@@ -2,8 +2,13 @@ const { auth } = require("../middlewares/auth");
 const authorize = require("../middlewares/authorize");
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
-const { resetPassword, verifyAccount } = require("../emails/account");
+const {
+  resetPassword,
+  verifyAccount,
+  passwordNewAccount,
+} = require("../emails/account");
 const Role = require("../models/role");
+const Order = require("../models/order");
 const { isValidUpdate } = require("../utils/valid");
 const router = require("express").Router();
 const mongoose = require("mongoose");
@@ -105,6 +110,26 @@ router.patch("/verify-account/:id", async (req, res) => {
   }
 });
 
+//POST /user/resend-email-verify
+router.post("/resend-email-verify", async (req, res) => {
+  try {
+    //Create user
+    const user = await User.findOne({ email: req.body?.email });
+
+    //Send email verify
+    const token = await user.generateToken();
+    const url = `http://localhost:5000/verify-account/${token}`;
+    verifyAccount(user.email, url);
+
+    res.send();
+  } catch (error) {
+    console.log(error.message);
+    res.status(400).send({
+      error: error.message,
+    });
+  }
+});
+
 //POST /user/login
 router.post("/login", async (req, res) => {
   try {
@@ -168,6 +193,30 @@ router.post("/logoutAll", auth, async (req, res) => {
   } catch (e) {
     console.log(e);
     res.status(500).send();
+  }
+});
+
+//GET /user/salers
+router.get("/salers", async (req, res) => {
+  try {
+    const roleSaler = await Role.findOne({ name: "saler", status: true });
+    const salers = await User.find({ role: roleSaler._id }).populate({
+      path: "orders",
+    });
+    const newSalers = [];
+    salers.forEach((saler) => {
+      let numStatus = { submitted: 0, cancelled: 0, success: 0 };
+      saler.orders.forEach((order) => numStatus[order.status]++);
+      newSalers.push({
+        _id: saler._id,
+        fullName: saler.fullName,
+        orders: numStatus,
+      });
+    });
+    res.send(newSalers);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).send({ error: error.message });
   }
 });
 
@@ -424,9 +473,12 @@ router.get("/admin/roles", auth, authorize("admin"), async (req, res) => {
 //POST /user/admin
 router.post("/admin", auth, authorize("admin"), async (req, res) => {
   const user = new User(req.body);
-  console.log(user, "++++++");
+  const { password } = req.body;
   try {
     await user.save();
+
+    //send email password:
+    passwordNewAccount(user.email, password);
     res.sendStatus(201);
   } catch (error) {
     console.log(error.message);

@@ -34,4 +34,18 @@ const verifyAccount = (email, url) => {
   });
 };
 
-module.exports = { resetPassword, verifyAccount };
+const passwordNewAccount = (email, password) => {
+  const data = {
+    from: "Excited User <me@samples.mailgun.org>",
+    to: `${email}`,
+    subject: "Đây là passowrd cho tài khoản của bạn",
+    html: `Password: ${password}`,
+  };
+
+  mg.messages().send(data, function (error, body) {
+    if (error) return console.log(error);
+    console.log(body);
+  });
+};
+
+module.exports = { resetPassword, verifyAccount, passwordNewAccount };
