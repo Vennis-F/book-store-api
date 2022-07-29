@@ -110,6 +110,26 @@ router.patch("/verify-account/:id", async (req, res) => {
   }
 });
 
+//POST /user/resend-email-verify
+router.post("/resend-email-verify", async (req, res) => {
+  try {
+    //Create user
+    const user = await User.findOne({ email: req.body?.email });
+
+    //Send email verify
+    const token = await user.generateToken();
+    const url = `http://localhost:5000/verify-account/${token}`;
+    verifyAccount(user.email, url);
+
+    res.send();
+  } catch (error) {
+    console.log(error.message);
+    res.status(400).send({
+      error: error.message,
+    });
+  }
+});
+
 //POST /user/login
 router.post("/login", async (req, res) => {
   try {
