@@ -242,7 +242,7 @@ router.get("/", auth, async (req, res) => {
 //PATCH  /user/profile (only update "fullName", "gender", "phone", "address" !!!not have avatar)
 router.patch("/profile", auth, async (req, res) => {
   const updates = Object.keys(req.body);
-  const allowUpdateds = ["fullName", "gender", "phone", "address"];
+  const allowUpdateds = ["fullName", "gender", "phone", "address", "avatar"];
 
   //Check valid update
   const isValid = updates.every((update) => allowUpdateds.includes(update));
