@@ -145,6 +145,7 @@ orderSchema.pre("save", function (next) {
 orderSchema.pre("save", async function (next) {
   try {
     const order = this;
+    // console.log("order", order.status, order.isModified("status"));
     if (order.isModified("status")) {
       if (order.status === "cancelled") {
         for (const [index, item] of order.items.entries()) {
@@ -164,6 +165,14 @@ orderSchema.pre("save", async function (next) {
 orderSchema.pre("save", async function (next) {
   try {
     const order = this;
+    console.log("---------");
+    console.log(
+      "order",
+      order.isModified("status"),
+      order.status,
+      order.status !== "success",
+      order["__v"]
+    );
     if (order.isModified("status") && order.status !== "success") {
       await order.populate("owner");
       let owner = order.owner;
@@ -187,12 +196,12 @@ orderSchema.pre("save", async function (next) {
           address: owner.address,
           updatedBy: "000000000000",
         });
-        await customer.save();
+        await customer.save({ validateModifiedOnly: true });
       } else {
         if (customer.status === "contact") {
           customer.status = "potential";
           customer.updatedBy = "000000000000";
-          await customer.save();
+          await customer.save({ validateModifiedOnly: true });
         }
       }
     }
@@ -224,16 +233,18 @@ orderSchema.pre("save", async function (next) {
     }
     next();
   } catch (error) {}
-});
+}); //auto asssign
 
 orderSchema.pre("save", async function (next) {
   try {
     const order = this;
-    // console.log("++++++");
-    // console.log(order.isModified("status"));
-    // console.log(order.status === "success");
-    // console.log(order.status);
-    // console.log(order.isModified("status") && order.status === "success");
+    console.log("++++++");
+    console.log(
+      "order",
+      order.isModified("status"),
+      order.status,
+      order.status === "success"
+    );
     if (order.isModified("status") && order.status === "success") {
       await order.populate("owner");
       const owner = order.owner;
@@ -241,17 +252,14 @@ orderSchema.pre("save", async function (next) {
         //Customer
         const customer = await Customer.findOne({ email: owner.email });
         customer.status = "customer";
-        console.log(customer.status);
-        await customer.save();
-        console.log(customer);
-        console.log("-------------");
+        await customer.save({ validateModifiedOnly: true });
       } else {
         //Guest
         console.log("here");
         const customer = await Customer.findOne({ email: order.email });
         console.log("check: ", customer);
         customer.status = "customer";
-        await customer.save();
+        await customer.save({ validateModifiedOnly: true });
       }
     }
     next();

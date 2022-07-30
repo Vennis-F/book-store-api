@@ -77,13 +77,13 @@ customerSchema.plugin(uniqueValidator);
 customerSchema.pre("save", async function (next) {
   const customer = this;
   if (
-    customer.updatedBy.toString().length === 12 ||
-    customer.updatedBy.toString().length === 24
+    customer?.updatedBy?.toString().length === 12 ||
+    customer?.updatedBy?.toString().length === 24
   )
     await customer.populate({ path: "updatedBy" });
 
   let updater;
-  if (customer.updatedBy) updater = customer.updatedBy.fullName;
+  if (customer?.updatedBy) updater = customer.updatedBy.fullName;
   else updater = "Auto";
 
   const history = {

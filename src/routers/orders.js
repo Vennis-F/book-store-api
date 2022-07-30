@@ -349,8 +349,8 @@ router.patch(
 // sort: sortedBy = orderDate_desc, customerName_asc, totalCost, status...
 // filter: from=...&to=...., status
 router.get("/saler", auth, authorize("saler"), async (req, res) => {
-  console.log(123);
   try {
+    console.log(req.query);
     const { from, to, status, sortedBy, limit, page } = req.query;
     const match = { saler: req.user._id };
     const sort = {};
@@ -371,6 +371,7 @@ router.get("/saler", auth, authorize("saler"), async (req, res) => {
       }
 
     //sort
+    console.log(sortedBy);
     if (sortedBy) {
       const parts = sortedBy.split("_");
 
@@ -392,7 +393,7 @@ router.get("/saler", auth, authorize("saler"), async (req, res) => {
 
     const orders = await Order.find(match, null, options);
 
-    const count = orders.length;
+    const count = await Order.countDocuments(match);
 
     res.send({ orders, count });
   } catch (e) {
@@ -500,15 +501,13 @@ router.patch("/saler/:id", auth, authorize("saler"), async (req, res) => {
     return res.status(400).send({ error: "Invalid updates" });
 
   try {
-    const order = await Order.findOneAndUpdate(
-      { _id: new mongoose.Types.ObjectId(req.params.id), saler: req.user._id },
-      req.body
-    );
-
+    const order = await Order.findById(req.params.id);
     if (!order) return res.sendStatus(404);
 
-    await order.save();
+    //update order
+    order.status = req.body.status;
 
+    await order.save({ validateModifiedOnly: true });
     res.send(order);
   } catch (e) {
     if (e.name === "CastError" && e.kind === "ObjectId")

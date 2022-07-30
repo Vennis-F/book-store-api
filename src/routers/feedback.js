@@ -136,7 +136,6 @@ router.patch("/:feedbackId", auth, authorize("customer"), async (req, res) => {
 //?star=...&product=...&status=...
 //sortable: fullName, productName, star, status
 //?sortedBy=fullName_desc //sortedBy=status_asc
-
 router.get("/marketing", auth, authorize("marketing"), async (req, res) => {
   try {
     const { star, product, status, sortedBy, limit, page } = req.query;
@@ -224,14 +223,13 @@ router.get("/marketing", auth, authorize("marketing"), async (req, res) => {
 //GET /feedbacks/marketing/search?search=...
 //search by fullName, content
 //pagination          ?limit=...&page=...
-
-router.get(
+router.post(
   "/marketing/search",
   auth,
   authorize("marketing"),
   async (req, res) => {
     try {
-      let { limit, page, search } = req.query;
+      let { limit, page, search } = req.body;
       const options = {};
 
       //Paging
@@ -254,7 +252,7 @@ router.get(
         { "user.name": name },
         null,
         options
-      );
+      ).populate({ path: "product" });
       for (const feedback of feedbacks) {
         if (checkById.length >= limit) break;
         if (!checkById.includes(feedback._id.toString())) {
@@ -262,8 +260,7 @@ router.get(
           searchResult.push(feedback);
         }
       }
-
-      if (checkById < limit - 1) {
+      if (checkById.length < limit - 1) {
         const feedbacks = await Feedback.find(
           { content: new RegExp(search, "gi") },
           null,
@@ -276,10 +273,10 @@ router.get(
             searchResult.push(feedback);
           }
         }
-
-        res.send(searchResult);
       }
+      res.send(searchResult);
     } catch (error) {
+      console.log(error);
       res.status(500).send(error);
     }
   }
