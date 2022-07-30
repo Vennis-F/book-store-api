@@ -13,14 +13,18 @@ const auth = async (req, res, next) => {
     const decode = jwt.verify(token, "SEC_JWT");
     const user = await User.findOne({ _id: decode._id, "tokens.token": token });
 
+    console.log(decode);
+    console.log(user);
     //Check user not exist
     if (!user) throw new Error();
 
     req.user = user;
     req.token = token;
     req.role = decode.role;
+    console.log(req.user);
     next();
   } catch (e) {
+    console.log(e);
     //Case: Not token, not valid token, user not found(jwt not valid)
     res.status(401).send({ error: "Please authenticate" });
   }

@@ -137,6 +137,8 @@ router.post("/", auth, authorize("customer"), async (req, res) => {
 //POST /cart (Add item to cart - not check cart item duplicated)
 router.post("/guest", async (req, res) => {
   let cart = req.session.cartGuest;
+  if (cart) console.log(req.session);
+  console.log("cart", cart);
 
   try {
     //Check product exist and Check product available

@@ -197,6 +197,7 @@ router.post("/confirm", auth, authorize("customer"), async (req, res) => {
       email,
       gender,
       note,
+      status: "submitted",
     });
 
     const savedOrder = await order.save();
@@ -255,14 +256,10 @@ router.post("/confirm/guest", async (req, res) => {
       email,
       gender,
       note,
+      status: "submitted",
     });
 
-    console.log(order);
-
-    console.log("++++++++++++++++++++++Test");
     await updateNewProductCartItem(cart);
-    console.log(req.session.cartGuest);
-    console.log("++++++++++++++++++++++");
 
     req.session.save();
     const savedOrder = await order.save();

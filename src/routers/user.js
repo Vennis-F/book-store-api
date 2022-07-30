@@ -221,13 +221,18 @@ router.get("/salers", async (req, res) => {
 });
 
 //GET /user/profile
-//"customer", "marketing", "sale", "saleManager", "admin"
-router.get("/profile", auth, authorize("customer"), async (req, res) => {
-  res.send({
-    user: req.user,
-    role: req.role,
-  });
-});
+//"customer", "marketing", "saler", "saleManager", "admin"
+router.get(
+  "/profile",
+  auth,
+  authorize("customer", "marketing", "saler", "saleManager", "admin"),
+  async (req, res) => {
+    res.send({
+      user: req.user,
+      role: req.role,
+    });
+  }
+);
 
 //GET /user (get all users)
 router.get("/", auth, async (req, res) => {
