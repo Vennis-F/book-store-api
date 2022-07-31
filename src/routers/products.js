@@ -45,6 +45,7 @@ router.post("/search", async (req, res) => {
   try {
     const products = await Product.find({
       $text: { $search: req.body.searchText },
+      status: true,
     })
       .skip(0)
       .limit(10);
