@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const uniqueValidator = require("mongoose-unique-validator");
 const validator = require("validator");
+const { sendEmail } = require("../emails/account");
 const Customer = require("./customer");
 const Role = require("./role");
 const User = require("./user");
@@ -238,22 +239,87 @@ orderSchema.pre("save", async function (next) {
 orderSchema.pre("save", async function (next) {
   try {
     const order = this;
-    console.log("++++++");
-    console.log(
-      "order",
-      order.isModified("status"),
-      order.status,
-      order.status === "success"
-    );
+    // console.log("++++++");
+    // console.log(
+    //   "order",
+    //   order.isModified("status"),
+    //   order.status,
+    //   order.status === "success"
+    // );
     if (order.isModified("status") && order.status === "success") {
       await order.populate("owner");
       const owner = order.owner;
+      const savedOrder = order;
       if (owner) {
+        //Send email confirm
+        const dataEmail = {
+          from: "Excited User <me@samples.mailgun.org>",
+          to: `${savedOrder.email}`,
+          subject: `Fwd: Đơn hàng #${savedOrder?._id} giao hàng thành công`,
+          html: `
+          <div>
+            <h2>
+              Cảm ơn quý khách ${savedOrder?.receiverName} đã mua hàng tại KULI
+              Shopping online
+            </h2>
+            <p>
+              Kuli rất vui thông báo đơn hàng #${savedOrder?._id} của quý khách đã
+              hoàn thành. Nếu quý khách có nhu cầu feedback về sản phẩm thì hãy ấn
+              vào link bên dưới
+            </p>
+            <button>http://localhost:5000</button>
+            <h3>THÔNG TIN ĐƠN HÀNG</h3><hr>
+            <h4>Phương thức thanh toán: Thanh toán bằng tiền mặt khi nhận hàng</h4>
+            <h4>Phí vận chuyển: 0đ</h4>
+            <h4>Tổng giá trị đơn hàng: ${savedOrder.totalCost}đ</h4>
+            <h4>Địa chỉ giao hàng:</h4>
+            <p>${savedOrder?.receiverName}</p>
+            <p>${savedOrder?.email}</p>
+            <p>${savedOrder?.address}</p>
+            <p>${savedOrder?.phone}</p>
+            <h2>Trạng thái: ĐÃ HOÀN THÀNH</h2>
+          </div>
+      `,
+        };
+        sendEmail(dataEmail);
+
         //Customer
         const customer = await Customer.findOne({ email: owner.email });
         customer.status = "customer";
         await customer.save({ validateModifiedOnly: true });
       } else {
+        //Send email confirm
+        console.log("send email from guest");
+        const dataEmail = {
+          from: "Excited User <me@samples.mailgun.org>",
+          to: `${savedOrder.email}`,
+          subject: `Fwd: Đơn hàng #${savedOrder?._id} giao hàng thành công`,
+          html: `
+                    <div>
+                      <h2>
+                        Cảm ơn quý khách ${savedOrder?.receiverName} đã mua hàng tại KULI
+                        Shopping online
+                      </h2>
+                      <p>
+                        Kuli rất vui thông báo đơn hàng #${savedOrder?._id} của quý khách đã
+                        hoàn thành. Nếu quý khách muốn mua sách lần nữa thì hãy đến cửa hàng
+                        của chúng tôi liền nha <3
+                      </p>
+                      <h3>THÔNG TIN ĐƠN HÀNG</h3><hr>
+                      <h4>Phương thức thanh toán: Thanh toán bằng tiền mặt khi nhận hàng</h4>
+                      <h4>Phí vận chuyển: 0đ</h4>
+                      <h4>Tổng giá trị đơn hàng: ${savedOrder.totalCost}đ</h4>
+                      <h4>Địa chỉ giao hàng:</h4>
+                      <p>${savedOrder?.receiverName}</p>
+                      <p>${savedOrder?.email}</p>
+                      <p>${savedOrder?.address}</p>
+                      <p>${savedOrder?.phone}</p>
+                      <h2>Trạng thái: ĐÃ HOÀN THÀNH</h2>
+                    </div>
+                  `,
+        };
+        sendEmail(dataEmail);
+
         //Guest
         console.log("here");
         const customer = await Customer.findOne({ email: order.email });

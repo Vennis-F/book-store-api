@@ -15,6 +15,7 @@ const {
 const Product = require("../models/product");
 const User = require("../models/user");
 const Role = require("../models/role");
+const { sendEmail } = require("../emails/account");
 
 //POST /checkout (not check exist cart or cart empty)
 router.post("/", auth, authorize("customer"), async (req, res) => {
@@ -200,7 +201,39 @@ router.post("/confirm", auth, authorize("customer"), async (req, res) => {
       status: "submitted",
     });
 
+    //Save order
     const savedOrder = await order.save();
+
+    //Send email confirm
+    const dataEmail = {
+      from: "Excited User <me@samples.mailgun.org>",
+      to: `${email}`,
+      subject: `Fwd: Xác nhận đơn hàng #${savedOrder?._id}`,
+      html: `
+        <div>
+          <h2>
+            Cảm ơn quý khách ${savedOrder?.receiverName} đã đặt hàng tại KULI
+            Shopping online
+          </h2>
+          <p>
+            Kuli rất vui thông báo đơn hàng #${savedOrder?._id} của quý khách đã
+            được tiếp nhận và đang trong quá trình chuẩn bị giao hàng. Kuli sẽ
+            gọi điện khi hàng đã tới địa chỉ của quý khách.
+          </p>
+          <h3>THÔNG TIN ĐƠN HÀNG</h3><hr>
+          <h4>Phương thức thanh toán: Thanh toán bằng tiền mặt khi nhận hàng</h4>
+          <h4>Phí vận chuyển: 0đ</h4>
+          <h4>Tổng giá trị đơn hàng: ${savedOrder.totalCost}đ</h4>
+          <h4>Địa chỉ giao hàng:</h4>
+          <p>${savedOrder?.receiverName}</p>
+          <p>${savedOrder?.email}</p>
+          <p>${savedOrder?.address}</p>
+          <p>${savedOrder?.phone}</p>
+        </div>
+      `,
+    };
+    sendEmail(dataEmail);
+
     res.status(201).send(savedOrder);
   } catch (error) {
     console.log(error);
@@ -262,7 +295,40 @@ router.post("/confirm/guest", async (req, res) => {
     await updateNewProductCartItem(cart);
 
     req.session.save();
+
+    //Create order
     const savedOrder = await order.save();
+
+    //Send email confirm
+    const dataEmail = {
+      from: "Excited User <me@samples.mailgun.org>",
+      to: `${email}`,
+      subject: `Fwd: Xác nhận đơn hàng #${savedOrder?._id}`,
+      html: `
+        <div>
+          <h2>
+            Cảm ơn quý khách ${savedOrder?.receiverName} đã đặt hàng tại KULI
+            Shopping online
+          </h2>
+          <p>
+            Kuli rất vui thông báo đơn hàng #${savedOrder?._id} của quý khách đã
+            được tiếp nhận và đang trong quá trình chuẩn bị giao hàng. Kuli sẽ
+            gọi điện khi hàng đã tới địa chỉ của quý khách.
+          </p>
+          <h3>THÔNG TIN ĐƠN HÀNG</h3><hr>
+          <h4>Phương thức thanh toán: Thanh toán bằng tiền mặt khi nhận hàng</h4>
+          <h4>Phí vận chuyển: 0đ</h4>
+          <h4>Tổng giá trị đơn hàng: ${savedOrder.totalCost}đ</h4>
+          <h4>Địa chỉ giao hàng:</h4>
+          <p>${savedOrder?.receiverName}</p>
+          <p>${savedOrder?.email}</p>
+          <p>${savedOrder?.address}</p>
+          <p>${savedOrder?.phone}</p>
+        </div>
+      `,
+    };
+    sendEmail(dataEmail);
+
     res.status(201).send(savedOrder);
   } catch (error) {
     console.log(error);

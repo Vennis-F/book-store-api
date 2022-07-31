@@ -48,4 +48,16 @@ const passwordNewAccount = (email, password) => {
   });
 };
 
-module.exports = { resetPassword, verifyAccount, passwordNewAccount };
+const sendEmail = (data) => {
+  mg.messages().send(data, function (error, body) {
+    if (error) return console.log(error);
+    console.log(body);
+  });
+};
+
+module.exports = {
+  resetPassword,
+  verifyAccount,
+  passwordNewAccount,
+  sendEmail,
+};
